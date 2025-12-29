@@ -1,0 +1,12 @@
+{
+  "cohens_kappa": 0.9275522496348527,
+  "percent_agreement": 0.9766423357664233,
+  "n_samples": 3425,
+  "n_agreements": 3345,
+  "interpretation": "Almost Perfect",
+  "label_distribution": {
+    "Negative": 383,
+    "Neutral": 239,
+    "Positive": 2803
+  }
+}

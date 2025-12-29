@@ -1,0 +1,65 @@
+{
+  "timestamp": "2025-12-29T16:41:49.530100",
+  "model": "vinai/phobert-base",
+  "num_classes": 3,
+  "test_metrics": {
+    "loss": 0.759676992893219,
+    "accuracy": 0.8171206225680934,
+    "f1_macro": 0.6052543424317619,
+    "f1_weighted": 0.8395450946693573,
+    "runtime": 3.9058,
+    "samples_per_second": 131.599,
+    "steps_per_second": 2.304,
+    "epoch": 5.0
+  },
+  "classification_report": {
+    "Negative": {
+      "precision": 0.5909090909090909,
+      "recall": 0.6724137931034483,
+      "f1-score": 0.6290322580645162,
+      "support": 58
+    },
+    "Neutral": {
+      "precision": 0.20588235294117646,
+      "recall": 0.3888888888888889,
+      "f1-score": 0.2692307692307692,
+      "support": 36
+    },
+    "Positive": {
+      "precision": 0.9657894736842105,
+      "recall": 0.8738095238095238,
+      "f1-score": 0.9175000000000001,
+      "support": 420
+    },
+    "accuracy": 0.8171206225680934,
+    "macro avg": {
+      "precision": 0.5875269725114927,
+      "recall": 0.6450374019339536,
+      "f1-score": 0.6052543424317619,
+      "support": 514
+    },
+    "weighted avg": {
+      "precision": 0.8702647294279728,
+      "recall": 0.8171206225680934,
+      "f1-score": 0.8395450946693573,
+      "support": 514
+    }
+  },
+  "confusion_matrix": [
+    [
+      39,
+      11,
+      8
+    ],
+    [
+      17,
+      14,
+      5
+    ],
+    [
+      10,
+      43,
+      367
+    ]
+  ]
+}

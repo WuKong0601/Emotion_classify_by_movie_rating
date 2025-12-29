@@ -1,0 +1,79 @@
+﻿============================================================
+DATA ANALYSIS
+============================================================
+
+Total rows: 3648
+Columns: ['movie_title', 'username', 'rating', 'review_text']
+
+=== Rating Distribution ===
+rating
+1      215
+2       54
+3       69
+4       64
+5      126
+6      124
+7      245
+8      317
+9      476
+10    1958
+Name: count, dtype: int64
+
+Ratings with NaN: 0
+
+=== Reviews with Content ===
+Reviews with text (>10 chars): 3595
+
+=== Sample Reviews ===
+python : Traceback 
+(most recent call 
+last):
+At line:1 char:1
++ python 
+analyze_data.py 2>&1 
+| Out-File -FilePath 
+analysis_output.txt  
+...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (Traceba   
+ ck (most recent     
+call last)::Stri    
+ng) [], RemoteEx    
+ception
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+  File "D:\NCKH\Emoti
+on_research\analyze_d
+ata.py", line 26, in 
+<module>
+    print(f"Rating: 
+{row['rating']:>5} | 
+{row['movie_title'][:
+25]:<25} | 
+{text}...")
+  File "C:\Users\Admi
+n\AppData\Local\Progr
+ams\Python\Python311\
+Lib\encodings\cp1252.
+py", line 19, in 
+encode
+    return codecs.cha
+rmap_encode(input,sel
+f.errors,encoding_tab
+le)[0]
+           ^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^
+UnicodeEncodeError: 
+'charmap' codec 
+can't encode 
+character '\u1eed' 
+in position 27: 
+character maps to 
+<undefined>
