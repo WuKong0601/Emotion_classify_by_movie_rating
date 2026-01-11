@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎬 Movie Review Sentiment Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>🎬 Vietnamese Movie Review Sentiment Analysis</h1>
+            <p class="subtitle">Demo phân loại cảm xúc đánh giá phim tiếng Việt</p>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- Movie Selection -->
+            <section class="movies-section">
+                <h2>📽️ Chọn Phim</h2>
+                <div class="movies-grid">
+                    {% for movie in movies %}
+                    <div class="movie-card" data-movie-id="{{ movie.id }}" data-movie-title="{{ movie.title }}">
+                        <div class="movie-poster">
+                            <img src="{{ movie.poster }}" alt="{{ movie.title }}">
+                        </div>
+                        <div class="movie-info">
+                            <h3>{{ movie.title }}</h3>
+                            <span class="movie-year">{{ movie.year }}</span>
+                            <span class="movie-genre">{{ movie.genre }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- Review Form -->
+            <section class="review-section">
+                <h2>✍️ Viết Đánh Giá</h2>
+                
+                <div class="selected-movie" id="selectedMovie">
+                    <span class="placeholder">Chọn một bộ phim ở trên</span>
+                </div>
+
+                <div class="form-group">
+                    <label>⭐ Rating (1-10)</label>
+                    <div class="rating-container">
+                        <input type="range" id="rating" min="1" max="10" value="7" class="rating-slider">
+                        <span id="ratingValue" class="rating-value">7</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>💬 Nội dung đánh giá</label>
+                    <textarea id="reviewText" placeholder="Nhập đánh giá của bạn về bộ phim... (tiếng Việt)" rows="4"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>🤖 Chọn Model</label>
+                    <select id="modelSelect">
+                        {% for model in models %}
+                        <option value="{{ model }}" {% if model == 'svm' %}selected{% endif %}>
+                            {{ model.replace('_', ' ').title() }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button id="predictBtn" class="predict-btn">
+                    🔮 Phân Tích Cảm Xúc
+                </button>
+
+                <!-- Sample Reviews -->
+                <div class="sample-reviews">
+                    <span class="label">Thử với mẫu:</span>
+                    <button class="sample-btn" data-text="Phim hay quá, diễn viên đóng xuất sắc, kịch bản hấp dẫn! Rất recommend cho mọi người!">
+                        👍 Tích cực
+                    </button>
+                    <button class="sample-btn" data-text="Bình thường, không có gì đặc biệt lắm. Xem cũng được.">
+                        😐 Trung tính
+                    </button>
+                    <button class="sample-btn" data-text="Phim dở tệ, thất vọng quá! Lãng phí tiền mua vé, diễn viên diễn kém.">
+                        👎 Tiêu cực
+                    </button>
+                </div>
+            </section>
+
+            <!-- Result Section -->
+            <section class="result-section" id="resultSection" style="display: none;">
+                <h2>📊 Kết Quả Phân Tích</h2>
+                
+                <div class="result-card" id="resultCard">
+                    <div class="result-header">
+                        <span class="result-emoji" id="resultEmoji">😊</span>
+                        <div class="result-label-container">
+                            <span class="result-label" id="resultLabel">Positive</span>
+                            <span class="result-model" id="resultModel">using SVM</span>
+                        </div>
+                    </div>
+
+                    <div class="probabilities" id="probabilities">
+                        <!-- Probability bars will be inserted here -->
+                    </div>
+
+                    <div class="result-details">
+                        <div class="detail-item">
+                            <span class="detail-label">🎬 Phim:</span>
+                            <span class="detail-value" id="resultMovie">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">⭐ Rating:</span>
+                            <span class="detail-value" id="resultRating">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">📝 Text đã xử lý:</span>
+                            <span class="detail-value processed-text" id="resultProcessed">-</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Model Comparison -->
+            <section class="comparison-section" id="comparisonSection" style="display: none;">
+                <h2>🔄 So Sánh Các Model</h2>
+                <button id="compareBtn" class="compare-btn">So sánh tất cả models</button>
+                <div class="comparison-grid" id="comparisonGrid">
+                    <!-- Comparison results will be inserted here -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <p>🎓 Vietnamese Movie Review Sentiment Classification Project</p>
+        <p>Huỳnh Lê Quốc Công (22520168) • Hứa Gia Bảo (23520099)</p>
+        <p>University of Information Technology - VNU-HCM</p>
+    </footer>
+
+    <script>
+        // Selected movie state
+        let selectedMovie = null;
+
+        // Movie selection
+        document.querySelectorAll('.movie-card').forEach(card => {
+            card.addEventListener('click', () => {
+                // Remove previous selection
+                document.querySelectorAll('.movie-card').forEach(c => c.classList.remove('selected'));
+                // Add selection to clicked card
+                card.classList.add('selected');
+                
+                selectedMovie = {
+                    id: card.dataset.movieId,
+                    title: card.dataset.movieTitle
+                };
+                
+                document.getElementById('selectedMovie').innerHTML = 
+                    `<span class="selected-title">🎬 ${selectedMovie.title}</span>`;
+            });
+        });
+
+        // Rating slider
+        const ratingSlider = document.getElementById('rating');
+        const ratingValue = document.getElementById('ratingValue');
+        ratingSlider.addEventListener('input', () => {
+            ratingValue.textContent = ratingSlider.value;
+        });
+
+        // Sample reviews
+        document.querySelectorAll('.sample-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('reviewText').value = btn.dataset.text;
+            });
+        });
+
+        // Predict button
+        document.getElementById('predictBtn').addEventListener('click', async () => {
+            const reviewText = document.getElementById('reviewText').value;
+            const model = document.getElementById('modelSelect').value;
+            const rating = parseInt(ratingSlider.value);
+            
+            if (!reviewText.trim()) {
+                alert('Vui lòng nhập nội dung đánh giá!');
+                return;
+            }
+
+            const btn = document.getElementById('predictBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Đang phân tích...';
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        review: reviewText,
+                        model: model,
+                        movie: selectedMovie ? selectedMovie.title : 'Chưa chọn',
+                        rating: rating
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    displayResult(result);
+                    document.getElementById('comparisonSection').style.display = 'block';
+                } else {
+                    alert(result.error);
+                }
+            } catch (error) {
+                alert('Có lỗi xảy ra: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔮 Phân Tích Cảm Xúc';
+            }
+        });
+
+        function displayResult(result) {
+            const section = document.getElementById('resultSection');
+            const card = document.getElementById('resultCard');
+            
+            section.style.display = 'block';
+            card.style.borderColor = result.color;
+            
+            document.getElementById('resultEmoji').textContent = result.emoji;
+            document.getElementById('resultLabel').textContent = result.label;
+            document.getElementById('resultLabel').style.color = result.color;
+            document.getElementById('resultModel').textContent = `using ${result.model.replace('_', ' ').toUpperCase()}`;
+            document.getElementById('resultMovie').textContent = result.movie;
+            document.getElementById('resultRating').textContent = result.rating + '/10';
+            document.getElementById('resultProcessed').textContent = result.processed_text;
+
+            // Display probabilities
+            const probDiv = document.getElementById('probabilities');
+            if (result.probabilities) {
+                probDiv.innerHTML = '';
+                const labels = ['Negative', 'Neutral', 'Positive'];
+                const colors = {'Negative': '#e74c3c', 'Neutral': '#95a5a6', 'Positive': '#27ae60'};
+                
+                labels.forEach(label => {
+                    const prob = result.probabilities[label] || 0;
+                    probDiv.innerHTML += `
+                        <div class="prob-item">
+                            <span class="prob-label">${label}</span>
+                            <div class="prob-bar">
+                                <div class="prob-fill" style="width: ${prob}%; background: ${colors[label]}"></div>
+                            </div>
+                            <span class="prob-value">${prob.toFixed(1)}%</span>
+                        </div>
+                    `;
+                });
+            } else {
+                probDiv.innerHTML = '<p class="no-prob">Model này không hỗ trợ probability</p>';
+            }
+
+            // Scroll to result
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Compare all models
+        document.getElementById('compareBtn').addEventListener('click', async () => {
+            const reviewText = document.getElementById('reviewText').value;
+            const rating = parseInt(ratingSlider.value);
+            
+            if (!reviewText.trim()) {
+                alert('Vui lòng nhập nội dung đánh giá trước!');
+                return;
+            }
+
+            const models = ['naive_bayes', 'svm', 'random_forest', 'logistic_regression'];
+            const grid = document.getElementById('comparisonGrid');
+            grid.innerHTML = '';
+
+            for (const model of models) {
+                try {
+                    const response = await fetch('/predict', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            review: reviewText,
+                            model: model,
+                            movie: selectedMovie ? selectedMovie.title : 'N/A',
+                            rating: rating
+                        })
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        grid.innerHTML += `
+                            <div class="comparison-card" style="border-color: ${result.color}">
+                                <div class="comp-header">
+                                    <span class="comp-model">${model.replace('_', ' ').toUpperCase()}</span>
+                                </div>
+                                <div class="comp-result">
+                                    <span class="comp-emoji">${result.emoji}</span>
+                                    <span class="comp-label" style="color: ${result.color}">${result.label}</span>
+                                </div>
+                                ${result.probabilities ? `
+                                    <div class="comp-prob">
+                                        Confidence: ${Math.max(...Object.values(result.probabilities)).toFixed(1)}%
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }
+                } catch (e) {
+                    grid.innerHTML += `
+                        <div class="comparison-card error">
+                            <span class="comp-model">${model.replace('_', ' ').toUpperCase()}</span>
+                            <span class="comp-error">Error</span>
+                        </div>
+                    `;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

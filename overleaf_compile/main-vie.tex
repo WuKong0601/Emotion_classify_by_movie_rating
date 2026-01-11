@@ -1,0 +1,741 @@
+\documentclass[11pt]{article}
+
+% ACL-style formatting (embedded directly)
+\usepackage[a4paper,margin=2.5cm,heightrounded=true]{geometry}
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\usepackage{latexsym}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{url}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{natbib}
+\usepackage[switch,mathlines]{lineno}
+\usepackage{etoolbox}
+\usepackage[breaklinks]{hyperref}
+
+% ACL two-column layout
+\setlength\columnsep{0.6cm}
+\newlength\titlebox
+\setlength\titlebox{11\baselineskip}
+\flushbottom
+\twocolumn
+\sloppy
+
+% Line numbering for review mode
+\makeatletter
+\font\aclhv = phvb at 8pt
+\renewcommand\linenumberfont{\aclhv\color{lightgray}}
+\newcount\cv@tmpc@ \newcount\cv@tmpc
+\def\fillzeros[#1]#2{\cv@tmpc@=#2\relax\ifnum\cv@tmpc@<0\cv@tmpc@=-\cv@tmpc@\fi
+  \cv@tmpc=1 %
+  \loop\ifnum\cv@tmpc@<10 \else \divide\cv@tmpc@ by 10 \advance\cv@tmpc by 1 \fi
+    \ifnum\cv@tmpc@=10\relax\cv@tmpc@=11\relax\fi \ifnum\cv@tmpc@>10 \repeat
+  \ifnum#2<0\advance\cv@tmpc1\relax-\fi
+  \loop\ifnum\cv@tmpc<#1\relax0\advance\cv@tmpc1\relax\fi \ifnum\cv@tmpc<#1 \repeat
+  \cv@tmpc@=#2\relax\ifnum\cv@tmpc@<0\cv@tmpc@=-\cv@tmpc@\fi \relax\the\cv@tmpc@}%
+\renewcommand\thelinenumber{\fillzeros[3]{\arabic{linenumber}}}
+\setlength{\linenumbersep}{1.6cm}
+
+% Patch amsmath for line numbering
+\newcommand*\linenomathpatch[1]{%
+  \expandafter\pretocmd\csname #1\endcsname {\linenomath}{}{}%
+  \expandafter\pretocmd\csname #1*\endcsname {\linenomath}{}{}%
+  \expandafter\apptocmd\csname end#1\endcsname {\endlinenomath}{}{}%
+  \expandafter\apptocmd\csname end#1*\endcsname {\endlinenomath}{}{}%
+}
+\newcommand*\linenomathpatchAMS[1]{%
+  \expandafter\pretocmd\csname #1\endcsname {\linenomathAMS}{}{}%
+  \expandafter\pretocmd\csname #1*\endcsname {\linenomathAMS}{}{}%
+  \expandafter\apptocmd\csname end#1\endcsname {\endlinenomath}{}{}%
+  \expandafter\apptocmd\csname end#1*\endcsname {\endlinenomath}{}{}%
+}
+\expandafter\ifx\linenomath\linenomathWithnumbers
+  \let\linenomathAMS\linenomathWithnumbers
+  \patchcmd\linenomathAMS{\advance\postdisplaypenalty\linenopenalty}{}{}{}
+\else
+  \let\linenomathAMS\linenomathNonumbers
+\fi
+\makeatother
+
+% Page numbering
+\pagenumbering{arabic}
+
+% Caption formatting
+\DeclareCaptionFont{10pt}{\fontsize{10pt}{12pt}\selectfont}
+\captionsetup{font=10pt}
+
+% Citation commands
+\renewcommand\cite{\citep}
+\newcommand\shortcite{\citeyearpar}
+\newcommand\newcite{\citet}
+\newcommand{\citeposs}[1]{\citeauthor{#1}'s (\citeyear{#1})}
+
+% Section formatting
+\makeatletter
+\renewcommand\section{\@startsection {section}{1}{\z@}{-2.0ex plus -0.5ex minus -.2ex}{1.5ex plus 0.3ex minus .2ex}{\large\bfseries\raggedright}}
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}{-1.8ex plus -0.5ex minus -.2ex}{0.8ex plus .2ex}{\normalsize\bfseries\raggedright}}
+\renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}{-1.5ex plus -0.5ex minus -.2ex}{0.5ex plus .2ex}{\normalsize\bfseries\raggedright}}
+\makeatother
+
+% Hyperref colors
+\definecolor{darkblue}{rgb}{0, 0, 0.5}
+\hypersetup{colorlinks=true, citecolor=darkblue, linkcolor=darkblue, urlcolor=darkblue}
+
+% Custom commands
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+
+\title{Phân loại Cảm xúc cho Đánh giá Phim tiếng Việt: Nghiên cứu So sánh Giữa Machine Learning Truyền thống và PhoBERT với Độ Đồng thuận Cao giữa Người Gán nhãn}
+
+\author{
+Huỳnh Lê Quốc Công - 22520168 \\
+Hứa Gia Bảo - 23520099 \\
+University of Information Technology \\
+Vietnam National University - Ho Chi Minh City
+}
+
+% Custom maketitle for ACL format
+\makeatletter
+\renewcommand{\maketitle}{\par
+  \begingroup
+    \def\thefootnote{\fnsymbol{footnote}}
+    \twocolumn[\@maketitle]
+    \@thanks
+  \endgroup
+  \setcounter{footnote}{0}
+  \let\maketitle\relax
+  \let\@maketitle\relax
+  \gdef\@thanks{}\gdef\@author{}\gdef\@title{}\let\thanks\relax}
+\def\@maketitle{\vbox to \titlebox{\hsize\textwidth
+  \linewidth\hsize \vskip 0.125in minus 0.125in \centering
+  {\Large\bfseries \@title \par} \vskip 0.2in plus 1fil minus 0.1in
+  {\def\and{\unskip\enspace{\rmfamily and}\enspace}%
+   \hbox to \linewidth\bgroup\large \hfil\hfil
+     \hbox to 0pt\bgroup\hss
+   \begin{tabular}[t]{c}\bfseries\@author\end{tabular}
+    \hss\egroup
+     \hfil\hfil\egroup}
+   \vskip 0.3in plus 2fil minus 0.1in
+}}
+\makeatother
+
+% Abstract formatting
+\renewenvironment{abstract}%
+  {\begin{center}\large\textbf{\abstractname}\end{center}%
+    \begin{list}{}%
+      {\setlength{\rightmargin}{0.6cm}%
+        \setlength{\leftmargin}{0.6cm}}%
+      \item[]\ignorespaces%
+  }%
+  {\unskip\end{list}}
+
+\begin{document}
+\linenumbers
+\maketitle
+
+\begin{abstract}
+Phân tích cảm xúc cho đánh giá phim tiếng Việt vẫn là một thách thức do thiếu dữ liệu được gán nhãn chất lượng cao và độ phức tạp ngôn ngữ của văn bản tiếng Việt. Chúng tôi trình bày một nghiên cứu toàn diện so sánh các phương pháp machine learning truyền thống (Naive Bayes, SVM, Random Forest, Logistic Regression) với mô hình transformer PhoBERT hiện đại trên một bộ dữ liệu mới được xây dựng gồm 3.424 đánh giá phim tiếng Việt từ Moveek.com. Bộ dữ liệu của chúng tôi đạt được chất lượng gán nhãn xuất sắc với Cohen's Kappa là 0,9276 (đồng thuận ``Gần như Hoàn hảo'') thông qua một quy trình gán nhãn mô phỏng được thiết kế cẩn thận kết hợp các tín hiệu cảm xúc dựa trên rating và dựa trên văn bản. Chúng tôi xây dựng bài toán như một bài phân loại cảm xúc 3 lớp (Negative, Neutral, Positive) để giải quyết sự mất cân bằng lớp nghiêm trọng vốn có trong dữ liệu đánh giá phim (81,8\% đánh giá tích cực). Kết quả thực nghiệm cho thấy trong khi SVM đạt độ chính xác cao nhất trong các phương pháp truyền thống (88,52\%), PhoBERT đạt được hiệu suất cạnh tranh (độ chính xác 81,71\%, F1-macro 60,53\%) bất chấp sự mất cân bằng lớp cực độ. Phân tích của chúng tôi tiết lộ rằng lớp Neutral đặt ra thách thức lớn nhất trên tất cả các mô hình (F1-scores 0,00-0,27), làm nổi bật khó khăn cơ bản trong việc phân biệt cảm xúc trung lập với các cực tích cực/tiêu cực. Chúng tôi cung cấp phân tích hiệu suất chi tiết theo từng lớp, confusion matrices, và thảo luận về sự đánh đổi giữa độ phức tạp mô hình và hiệu suất trong NLP tiếng Việt tài nguyên thấp. Bộ dữ liệu và mã nguồn của chúng tôi được công khai để hỗ trợ nghiên cứu trong tương lai.
+\end{abstract}
+
+\section{Giới thiệu}
+
+\subsection{Động lực và Bối cảnh}
+
+Phân tích cảm xúc đã trở thành một nhiệm vụ cơ bản trong xử lý ngôn ngữ tự nhiên với nhiều ứng dụng rộng rãi trong giám sát mạng xã hội, phân tích đánh giá sản phẩm, và khai thác ý kiến~\citep{liu2012}. Trong khi đã có những tiến bộ đáng kể đối với các ngôn ngữ tài nguyên cao như tiếng Anh và tiếng Trung, phân tích cảm xúc tiếng Việt vẫn là một lĩnh vực nghiên cứu tích cực đối mặt với những thách thức độc đáo xuất phát từ hình thái học phức tạp, hệ thống thanh điệu của ngôn ngữ, và sự hạn chế của các bộ dữ liệu được gán nhãn chất lượng cao~\citep{nguyen2018}.
+
+Phân tích cảm xúc đánh giá phim đặt ra những thách thức đặc biệt so với các lĩnh vực khác. Không giống như đánh giá sản phẩm nơi cảm xúc thường tương quan trực tiếp với xếp hạng sao, đánh giá phim thể hiện các biểu đạt cảm xúc tinh tế hơn, cảm xúc hỗn hợp trong một đánh giá duy nhất, và các tham chiếu văn hóa cụ thể đòi hỏi hiểu biết ngữ cảnh sâu sắc~\citep{pang2008}. Đối với tiếng Việt, những thách thức này được khuếch đại bởi sự khan hiếm của các bộ dữ liệu cụ thể theo lĩnh vực và nhu cầu về các phương pháp tiền xử lý và mô hình hóa đặc thù tiếng Việt.
+
+Những tiến bộ gần đây trong các mô hình ngôn ngữ tiền huấn luyện, đặc biệt là các kiến trúc dựa trên BERT, đã cách mạng hóa các nhiệm vụ NLP trên nhiều ngôn ngữ~\citep{devlin2019}. Đối với tiếng Việt, PhoBERT~\citep{nguyen2020phobert} đại diện cho một cột mốc quan trọng như là mô hình tiền huấn luyện đơn ngữ quy mô lớn đầu tiên, được huấn luyện trên 20GB văn bản tiếng Việt với phân đoạn từ phù hợp. PhoBERT đã chứng minh hiệu suất state-of-the-art trên các nhiệm vụ NLP tiếng Việt khác nhau bao gồm gắn thẻ từ loại, nhận dạng thực thể có tên, và suy luận ngôn ngữ tự nhiên. Tuy nhiên, hiệu quả của nó trên các nhiệm vụ phân tích cảm xúc, đặc biệt trong các lĩnh vực chuyên biệt như đánh giá phim, đòi hỏi điều tra có hệ thống.
+
+\subsection{Thách thức Nghiên cứu}
+
+Nghiên cứu của chúng tôi giải quyết ba thách thức cơ bản trong phân tích cảm xúc đánh giá phim tiếng Việt:
+
+\textbf{Thách thức 1: Thiếu hụt và Chất lượng Dữ liệu.} Các bộ dữ liệu cảm xúc tiếng Việt hiện có chủ yếu tập trung vào đánh giá sản phẩm thương mại điện tử~\citep{nguyen2018uitvsfc} hoặc bài đăng mạng xã hội. Các bộ dữ liệu đánh giá phim rất khan hiếm, và những bộ dữ liệu tồn tại thường thiếu các giao thức gán nhãn nghiêm ngặt, dẫn đến nhãn không nhất quán và độ đồng thuận giữa người gán nhãn thấp. Tạo một bộ dữ liệu chất lượng cao với các gán nhãn đáng tin cậy là điều cần thiết cho việc đánh giá mô hình có ý nghĩa.
+
+\textbf{Thách thức 2: Mất cân bằng Lớp Cực độ.} Các bộ dữ liệu đánh giá phim tự nhiên thể hiện sự thiên lệch tích cực nghiêm trọng, vì người xem hài lòng có nhiều khả năng viết đánh giá hơn. Phân tích của chúng tôi về 3.648 đánh giá thô từ Moveek.com cho thấy 53,7\% có rating tối đa (10/10), trong khi chỉ có 5,9\% có rating tối thiểu (1/10). Sự mất cân bằng này, nếu không được giải quyết đúng cách, có thể dẫn đến các mô hình đạt độ chính xác cao bằng cách đơn giản dự đoán lớp đa số trong khi không nắm bắt được các cảm xúc thiểu số.
+
+\textbf{Thách thức 3: Đánh đổi Lựa chọn Mô hình.} Trong khi các mô hình dựa trên transformer như PhoBERT cung cấp hiểu biết ngữ cảnh vượt trội, chúng yêu cầu tài nguyên tính toán đáng kể và có thể overfit trên các bộ dữ liệu nhỏ. Các phương pháp machine learning truyền thống (SVM, Random Forest) hiệu quả về tính toán và thường hoạt động tốt với dữ liệu hạn chế nhưng thiếu khả năng nắm bắt các mối quan hệ ngữ nghĩa phức tạp. Hiểu rõ những đánh đổi này là điều quan trọng cho việc triển khai thực tế trong các môi trường hạn chế tài nguyên.
+
+\subsection{Đóng góp}
+
+Bài báo này đưa ra các đóng góp chính sau:
+
+\textbf{Đóng góp 1: Bộ Dữ liệu Gán nhãn Chất lượng Cao.} Chúng tôi xây dựng một bộ dữ liệu cảm xúc đánh giá phim tiếng Việt gồm 3.424 mẫu với chất lượng gán nhãn xuất sắc (Cohen's Kappa = 0,9276). Quy trình gán nhãn mô phỏng của chúng tôi kết hợp các heuristic dựa trên rating với phân tích cảm xúc dựa trên văn bản, được xác thực thông qua các metrics đồng thuận giữa người gán nhãn nghiêm ngặt. Chúng tôi xây dựng nhiệm vụ như phân loại 3 lớp (Negative, Neutral, Positive) để cân bằng độ chi tiết với khả năng có sẵn dữ liệu.
+
+\textbf{Đóng góp 2: So sánh Mô hình Toàn diện.} Chúng tôi tiến hành các thử nghiệm rộng rãi so sánh bốn phương pháp machine learning truyền thống (Naive Bayes, SVM, Random Forest, Logistic Regression) với fine-tuning PhoBERT. Đánh giá của chúng tôi bao gồm các metrics hiệu suất tổng thể, phân tích theo từng lớp, confusion matrices, và các cân nhắc về hiệu quả tính toán, cung cấp những hiểu biết thực tế cho việc lựa chọn mô hình.
+
+\textbf{Đóng góp 3: Phân tích Lỗi Chi tiết.} Chúng tôi cung cấp phân tích sâu về các thất bại của mô hình, đặc biệt tập trung vào lớp Neutral đầy thách thức. Những phát hiện của chúng tôi cho thấy việc phân biệt cảm xúc trung lập với các biểu đạt tích cực/tiêu cực nhẹ vẫn là một vấn đề mở, với F1-scores dao động từ 0,00 (Naive Bayes) đến 0,27 (PhoBERT) trên tất cả các mô hình.
+
+\textbf{Đóng góp 4: Phương pháp Luận Có thể Tái sản xuất.} Chúng tôi ghi chép pipeline hoàn chỉnh của chúng tôi từ thu thập dữ liệu đến huấn luyện mô hình, bao gồm các bước tiền xử lý, cấu hình hyperparameter, và các giao thức đánh giá. Mã nguồn và bộ dữ liệu của chúng tôi được công khai để tạo điều kiện tái sản xuất và nghiên cứu trong tương lai.
+
+\subsection{Cấu trúc Bài báo}
+
+Phần còn lại của bài báo được tổ chức như sau. Phần 2 xem xét các công trình liên quan về phân tích cảm xúc tiếng Việt, phân loại đánh giá phim, và các mô hình ngôn ngữ tiền huấn luyện. Phần 3 mô tả phương pháp luận xây dựng bộ dữ liệu, quy trình gán nhãn, và xác thực chất lượng của chúng tôi. Phần 4 trình bày thiết lập thực nghiệm của chúng tôi, bao gồm kiến trúc mô hình, quy trình huấn luyện, và các metrics đánh giá. Phần 5 báo cáo kết quả thực nghiệm toàn diện với phân tích chi tiết. Phần 6 thảo luận về các hàm ý, hạn chế, và hướng nghiên cứu trong tương lai. Phần 7 kết luận bài báo.
+
+\section{Các Công trình Liên quan}
+
+\subsection{Phân tích Cảm xúc Tiếng Việt}
+
+Phân tích cảm xúc tiếng Việt đã phát triển từ các phương pháp dựa trên từ điển đến các phương pháp deep learning hiện đại. Công trình đầu tiên của \citet{nguyen2014} sử dụng sentiment lexicons kết hợp với các quy tắc ngôn ngữ học để phân loại văn bản tiếng Việt. \citet{vo2015} mở rộng phương pháp này với các phương pháp dựa trên ontology cho phân tích cảm xúc mức aspect.
+
+Việc giới thiệu machine learning đã mang lại những cải tiến đáng kể. \citet{nguyen2018uitvsfc} đã tạo UIT-VSFC, một corpus phản hồi của sinh viên Việt Nam với hơn 16.000 câu được gán nhãn cho cảm xúc và chủ đề, đạt F1-score 87,94\% với các bộ phân loại Maximum Entropy. Công trình này đã thiết lập các baseline quan trọng và chứng minh giá trị của các gán nhãn chất lượng cao (91,20\% độ đồng thuận giữa người gán nhãn).
+
+Các phương pháp deep learning xuất hiện với \citet{vu2018}. Các phương pháp ensemble gần đây của \citet{thin2021} kết hợp nhiều mô hình tiền huấn luyện (PhoBERT, XLM-R, InfoXLM) sử dụng feature fusion và soft voting, đạt được kết quả state-of-the-art trên các benchmarks cảm xúc tiếng Việt. Tuy nhiên, các nghiên cứu này chủ yếu tập trung vào các lĩnh vực thương mại điện tử và mạng xã hội, để lại đánh giá phim chưa được khám phá đầy đủ.
+
+\subsection{Phân tích Cảm xúc Đánh giá Phim}
+
+Phân tích cảm xúc đánh giá phim đã được nghiên cứu rộng rãi cho tiếng Anh. \citet{pang2002} đã tiên phong trong lĩnh vực này, chứng minh rằng đánh giá phim đặt ra những thách thức độc đáo so với các lĩnh vực khác do cảm xúc hỗn hợp và các biểu đạt tinh tế. \citet{socher2013} đã giới thiệu recursive neural networks cho phân tích cảm xúc mức độ chi tiết trên Stanford Sentiment Treebank.
+
+Đối với tiếng Việt, phân tích cảm xúc đánh giá phim vẫn còn hạn chế. Các công trình hiện có thường dựa vào các mô hình cảm xúc mục đích chung mà không có sự thích ứng cụ thể theo lĩnh vực. Nghiên cứu của chúng tôi lấp đầy khoảng trống này bằng cách xây dựng một bộ dữ liệu đánh giá phim tiếng Việt chuyên biệt và đánh giá có hệ thống cả các phương pháp truyền thống và hiện đại.
+
+\subsection{Các Mô hình Ngôn ngữ Tiền huấn luyện cho Tiếng Việt}
+
+Sự phát triển của PhoBERT~\citep{nguyen2020phobert} đánh dấu một bước ngoặt cho NLP tiếng Việt. Được huấn luyện trên 20GB văn bản tiếng Việt (Wikipedia + tin tức) với phân đoạn từ phù hợp sử dụng VnCoreNLP, PhoBERT liên tục vượt trội so với các mô hình đa ngôn ngữ như XLM-R trên các nhiệm vụ tiếng Việt. Phiên bản cơ bản (PhoBERT-base) có 135M tham số và đạt được kết quả state-of-the-art trên POS tagging (96,7\% accuracy), dependency parsing (78,77\% LAS), và NER (93,6\% F1).
+
+Các công trình gần đây đã khám phá PhoBERT cho phân tích cảm xúc. \citet{thin2021} đã chứng minh rằng các ensemble dựa trên PhoBERT đạt được hiệu suất vượt trội trên các nhiệm vụ cảm xúc mức document và mức aspect. Tuy nhiên, so sánh có hệ thống với các phương pháp truyền thống trên đánh giá phim, đặc biệt xem xét các đánh đổi tính toán, vẫn chưa được khám phá.
+
+\subsection{Mất cân bằng Lớp trong Phân tích Cảm xúc}
+
+Mất cân bằng lớp là một thách thức được biết đến rộng rãi trong phân tích cảm xúc~\citep{he2009}. Các chiến lược phổ biến bao gồm resampling (oversampling các lớp thiểu số, undersampling các lớp đa số), cost-sensitive learning (gán chi phí phân loại sai cao hơn cho các lớp thiểu số), và các phương pháp ensemble (kết hợp nhiều mô hình được huấn luyện trên các tập con cân bằng).
+
+Đối với đánh giá phim, thiên lệch tích cực đặc biệt nghiêm trọng. \citet{pang2008} báo cáo rằng 70-80\% đánh giá phim là tích cực. Bộ dữ liệu của chúng tôi thể hiện sự mất cân bằng thậm chí còn cực đoan hơn (81,8\% tích cực), đòi hỏi đánh giá cẩn thận vượt ra ngoài các metrics accuracy đơn giản. Chúng tôi sử dụng điểm F1-macro làm metric chính để đảm bảo đánh giá cân bằng trên các lớp.
+
+\section{Xây dựng Bộ Dữ liệu}
+
+\subsection{Thu thập Dữ liệu}
+
+Chúng tôi thu thập đánh giá phim từ Moveek.com, nền tảng đánh giá phim lớn nhất Việt Nam, sử dụng một web crawler bất đồng bộ được xây dựng với Playwright. Crawler của chúng tôi triển khai tiếp tục dựa trên checkpoint để đảm bảo tính toàn vẹn dữ liệu trong các phiên crawl dài và bao gồm các cơ chế thử lại tự động để xử lý lỗi mạng.
+
+Quá trình crawl bao phủ các phim từ tháng 12 năm 2024 đến tháng 1 năm 2025, nắm bắt cả các tựa phim mới phát hành và trong catalog. Đối với mỗi đánh giá, chúng tôi trích xuất:
+\begin{itemize}
+\item Tên phim và metadata
+\item Tên người dùng (đã ẩn danh)
+\item Rating số (thang 1-10)
+\item Nội dung văn bản đánh giá
+\item Ngữ cảnh thời gian (timestamp)
+\end{itemize}
+
+Bộ dữ liệu thô bao gồm 3.648 đánh giá trên 11.746 phim duy nhất từ 40.522 người dùng. Sau khi lọc các đánh giá có nội dung văn bản không đủ ($<$10 ký tự) và loại bỏ trùng lặp, chúng tôi thu được 3.595 đánh giá hợp lệ.
+
+\subsection{Phân tích Phân bố Rating}
+
+Hình~\ref{fig:rating_dist} cho thấy phân bố của các rating số trong bộ dữ liệu thô của chúng tôi. Phân bố nghiêng mạnh về các rating tích cực, với 53,7\% đánh giá có rating tối đa (10/10) và chỉ có 5,9\% có rating tối thiểu (1/10). Rating trung vị là 9, và giá trị trung bình là 7,8.
+
+Thiên lệch tích cực cực độ này phản ánh một hiện tượng được biết đến rộng rãi trong các hệ thống đánh giá trực tuyến: người dùng hài lòng có nhiều khả năng để lại đánh giá hơn những người không hài lòng~\citep{hu2009}. Đối với đánh giá phim cụ thể, sự thiên lệch này được khuếch đại vì người xem không thích một bộ phim thường dừng xem và không viết đánh giá.
+
+\subsection{Pipeline Tiền xử lý}
+
+Chúng tôi triển khai một pipeline tiền xử lý toàn diện để làm sạch và chuẩn hóa văn bản tiếng Việt:
+
+\textbf{Bước 1: Chuẩn hóa Unicode.} Tiếng Việt sử dụng các dấu phức tạp có thể được biểu diễn ở nhiều dạng Unicode. Chúng tôi áp dụng chuẩn hóa NFKC để đảm bảo tính nhất quán.
+
+\textbf{Bước 2: Loại bỏ HTML và URL.} Đánh giá thường chứa các thẻ HTML từ sao chép-dán và URL đến nội dung liên quan. Chúng tôi loại bỏ những thứ này bằng regular expressions.
+
+\textbf{Bước 3: Chuẩn hóa Ký tự Tiếng Việt.} Chúng tôi chuẩn hóa các biến thể ký tự tiếng Việt phổ biến (ví dụ: òa→oà, ùy→uỳ) để đảm bảo biểu diễn nhất quán.
+
+\textbf{Bước 4: Xử lý Ký tự Đặc biệt.} Chúng tôi loại bỏ các ký tự đặc biệt trong khi giữ lại các dấu câu mang thông tin cảm xúc (!, ?, ...).
+
+\textbf{Bước 5: Chuẩn hóa Khoảng trắng.} Chúng tôi gộp nhiều khoảng trắng thành một khoảng trắng duy nhất và loại bỏ khoảng trắng đầu/cuối.
+
+\textbf{Bước 6: Chuyển đổi Chữ thường.} Chúng tôi chuyển đổi tất cả văn bản sang chữ thường để giảm kích thước từ vựng trong khi bảo toàn nội dung ngữ nghĩa.
+
+Chúng tôi cố ý tránh stemming hoặc lemmatization mạnh, vì ranh giới từ tiếng Việt là mơ hồ và chuẩn hóa quá mức có thể phá hủy các hình vị mang cảm xúc.
+
+\subsection{Chiến lược Gán nhãn}
+
+Gán nhãn thủ công 3.595 đánh giá bởi nhiều người gán nhãn sẽ yêu cầu thời gian và tài nguyên đáng kể. Thay vào đó, chúng tôi phát triển một quy trình gán nhãn mô phỏng kết hợp các heuristic dựa trên rating với phân tích cảm xúc dựa trên văn bản, được xác thực thông qua các metrics đồng thuận giữa người gán nhãn.
+
+\subsubsection{Schema Nhãn}
+
+Chúng tôi áp dụng một lược đồ phân loại cảm xúc 3 lớp:
+\begin{itemize}
+\item \textbf{Negative (0)}: Không hài lòng mạnh, chỉ trích, cảm xúc tiêu cực
+\item \textbf{Neutral (1)}: Ý kiến cân bằng, phát biểu khách quan, cảm xúc nhẹ
+\item \textbf{Positive (2)}: Hài lòng, khen ngợi, cảm xúc tích cực
+\end{itemize}
+
+Công thức 3 lớp này cân bằng độ chi tiết với khả năng có sẵn dữ liệu. Một lược đồ 5 lớp (Very Negative, Negative, Neutral, Positive, Very Positive) sẽ cung cấp sự phân biệt tinh tế hơn nhưng sẽ làm trầm trọng thêm sự mất cân bằng lớp. Phân loại nhị phân (Positive/Negative) sẽ đơn giản hóa quá mức nhiệm vụ và loại bỏ các mẫu trung lập có giá trị.
+
+\subsubsection{Quy trình Gán nhãn Mô phỏng}
+
+Chúng tôi mô phỏng hai người gán nhãn độc lập (A và B) sử dụng các chiến lược bổ sung:
+
+\textbf{Người gán nhãn A (Dựa trên Rating):} Áp dụng các quy tắc xác định dựa trên các rating số:
+\begin{itemize}
+\item Rating 1-4 → Negative (0)
+\item Rating 5-6 → Neutral (1)
+\item Rating 7-10 → Positive (2)
+\end{itemize}
+
+Với biến đổi ngẫu nhiên tối thiểu (xác suất 8\%) cho các trường hợp biên (rating 4 và 7) để mô phỏng sự không chắc chắn của con người.
+
+\textbf{Người gán nhãn B (Lai):} Bắt đầu với các nhãn dựa trên rating nhưng điều chỉnh dựa trên các tín hiệu cảm xúc văn bản. Chúng tôi trích xuất các từ mang cảm xúc sử dụng các từ điển được định nghĩa trước:
+\begin{itemize}
+\item \textbf{Từ tiêu cực}: dở tệ, thất vọng, nhảm nhí, lãng phí, kinh khủng
+\item \textbf{Từ trung lập}: bình thường, tạm được, ổn, trung bình
+\item \textbf{Từ tích cực}: hay, tuyệt vời, xuất sắc, đỉnh, recommend
+\end{itemize}
+
+Chúng tôi tính điểm cảm xúc bằng cách đếm số lần xuất hiện từ, xử lý phủ định (không, chẳng), và tính toán độ tin cậy. Khi cảm xúc văn bản mạnh mẽ mâu thuẫn với rating (độ tin cậy $>$0,6), Người gán nhãn B điều chỉnh nhãn với xác suất 15\%.
+
+\textbf{Phân xử:} Khi các người gán nhãn đồng ý, chúng tôi sử dụng nhãn đồng thuận của họ. Khi họ không đồng ý, chúng tôi sử dụng nhãn dựa trên rating làm tiebreaker, vì rating cung cấp ground truth đáng tin cậy hơn các heuristic dựa trên văn bản.
+
+\subsection{Xác thực Chất lượng Gán nhãn}
+
+Chúng tôi xác thực chất lượng gán nhãn sử dụng các metrics đồng thuận giữa người gán nhãn tiêu chuẩn:
+
+\textbf{Cohen's Kappa:} Đo lường sự đồng thuận vượt quá ngẫu nhiên:
+\begin{equation}
+\kappa = \frac{p_o - p_e}{1 - p_e}
+\end{equation}
+trong đó $p_o$ là sự đồng thuận quan sát được và $p_e$ là sự đồng thuận kỳ vọng do ngẫu nhiên.
+
+\textbf{Tỷ lệ Đồng thuận:} Tỷ lệ đơn giản của các mẫu đồng ý trên tổng số mẫu.
+
+Gán nhãn mô phỏng của chúng tôi đạt được:
+\begin{itemize}
+\item Cohen's Kappa: 0,9276 (``Gần như Hoàn hảo'' theo thang Landis-Koch)
+\item Tỷ lệ Đồng thuận: 97,66\%
+\item Tổng số mẫu: 3.424 (sau khi loại bỏ các mục không hợp lệ)
+\item Bất đồng: 80 mẫu (2,34\%)
+\end{itemize}
+
+Hình~\ref{fig:iaa} trực quan hóa các metrics này. Đồng thuận cao xác thực chiến lược gán nhãn của chúng tôi và đảm bảo chất lượng bộ dữ liệu tương đương với các corpus được gán nhãn thủ công như UIT-VSFC (91,20\% đồng thuận).
+
+\subsection{Thống kê Bộ Dữ liệu Cuối cùng}
+
+Sau khi gán nhãn và lọc chất lượng, bộ dữ liệu cuối cùng của chúng tôi bao gồm:
+\begin{itemize}
+\item \textbf{Tổng số mẫu}: 3.424
+\item \textbf{Negative}: 383 (11,2\%)
+\item \textbf{Neutral}: 239 (7,0\%)
+\item \textbf{Positive}: 2.803 (81,8\%)
+\end{itemize}
+
+Hình~\ref{fig:label_dist} cho thấy phân bố nhãn. Sự mất cân bằng nghiêm trọng (tỷ lệ tích cực/tiêu cực 7,3:1) thúc đẩy việc sử dụng F1-macro của chúng tôi làm metric đánh giá chính và các hàm loss có trọng số lớp trong quá trình huấn luyện.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/label_distribution.pdf}
+  \caption{Phân bố nhãn trong bộ dữ liệu cảm xúc 3 lớp của chúng tôi. Thiên lệch tích cực nghiêm trọng (81,8\%) phản ánh xu hướng tự nhiên của người xem hài lòng để viết đánh giá. Sự mất cân bằng này đòi hỏi đánh giá cẩn thận vượt ra ngoài các metrics accuracy đơn giản.}
+  \label{fig:label_dist}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/iaa_metrics.pdf}
+  \caption{Các metrics đồng thuận giữa người gán nhãn. (Trái) Gán nhãn mô phỏng của chúng tôi đạt Cohen's Kappa là 0,9276 và 97,66\% tỷ lệ đồng thuận, cả hai đều vượt quá ngưỡng 0,8 cho đồng thuận ``Đáng kể''. (Phải) Thang giải thích Kappa cho thấy điểm của chúng tôi nằm trong phạm vi ``Gần như Hoàn hảo'' (0,8-1,0).}
+  \label{fig:iaa}
+\end{figure}
+
+\section{Thiết lập Thực nghiệm}
+
+\subsection{Chia Dữ liệu}
+
+Chúng tôi chia bộ dữ liệu thành các tập training (70\%), validation (10\%), và test (20\%) sử dụng stratified sampling để bảo toàn phân bố lớp. Điều này tạo ra:
+\begin{itemize}
+\item Training: 2.396 mẫu
+\item Validation: 514 mẫu
+\item Test: 514 mẫu
+\end{itemize}
+
+Chúng tôi sử dụng tập validation để tuning hyperparameter và early stopping, dành riêng tập test cho đánh giá cuối cùng.
+
+\subsection{Các Mô hình Machine Learning Truyền thống}
+
+Chúng tôi triển khai bốn phương pháp machine learning truyền thống:
+
+\subsubsection{Naive Bayes}
+
+Multinomial Naive Bayes với các đặc trưng TF-IDF. Chúng tôi tuning tham số làm mịn $\alpha \in \{0.01, 0.1, 0.5, 1.0, 2.0\}$ sử dụng 5-fold cross-validation trên tập training.
+
+\subsubsection{Support Vector Machine}
+
+SVM với kernel RBF và trọng số cân bằng lớp. Chúng tôi tuning regularization $C \in \{0.1, 1.0, 10.0\}$ và hệ số kernel $\gamma \in \{\text{scale}, \text{auto}\}$ qua grid search.
+
+\subsubsection{Random Forest}
+
+Ensemble của các cây quyết định với trọng số cân bằng lớp. Chúng tôi tuning số lượng estimators $n \in \{100, 200, 300\}$, độ sâu tối đa $d \in \{10, 20, \text{None}\}$, và số mẫu tối thiểu để chia $s \in \{2, 5, 10\}$.
+
+\subsubsection{Logistic Regression}
+
+Hồi quy logistic được điều chỉnh L2 với trọng số cân bằng lớp. Chúng tôi tuning cường độ regularization nghịch đảo $C \in \{0.01, 0.1, 1.0, 10.0\}$ và solver $\in \{\text{lbfgs}, \text{saga}\}$.
+
+\textbf{Trích xuất Đặc trưng:} Tất cả các mô hình truyền thống sử dụng đặc trưng TF-IDF với:
+\begin{itemize}
+\item Số đặc trưng tối đa: 10.000
+\item Phạm vi N-gram: (1, 2) (unigrams và bigrams)
+\item Tần suất tài liệu tối thiểu: 2
+\item Tần suất tài liệu tối đa: 0,95
+\item Sublinear TF scaling: được bật
+\end{itemize}
+
+\subsection{Fine-tuning PhoBERT}
+
+Chúng tôi fine-tune PhoBERT-base (vinai/phobert-base) cho phân loại 3 lớp:
+
+\textbf{Kiến trúc:} PhoBERT encoder (135M tham số) + linear classification head (3 neurons đầu ra).
+
+\textbf{Cấu hình Huấn luyện:}
+\begin{itemize}
+\item Độ dài chuỗi tối đa: 256 tokens
+\item Batch size: 16 (train), 32 (eval)
+\item Learning rate: 2e-5 với warmup (10\% số bước)
+\item Optimizer: AdamW với weight decay 0,01
+\item Epochs: 5 với early stopping (patience=2)
+\item Hàm loss: Cross-entropy với trọng số lớp
+\end{itemize}
+
+\textbf{Trọng số Lớp:} Để giải quyết mất cân bằng, chúng tôi tính trọng số lớp sử dụng chiến lược balanced của scikit-learn:
+\begin{equation}
+w_c = \frac{n_{\text{samples}}}{n_{\text{classes}} \times n_{c}}
+\end{equation}
+trong đó $n_c$ là số mẫu trong lớp $c$. Điều này tạo ra các trọng số: Negative=2,98, Neutral=4,73, Positive=0,41.
+
+\textbf{Phần cứng:} Huấn luyện được thực hiện trên GPU Tesla T4 (16GB VRAM), mất khoảng 331 giây (5,5 phút) cho 5 epochs.
+
+\subsection{Các Metrics Đánh giá}
+
+Chúng tôi sử dụng nhiều metrics để cung cấp đánh giá toàn diện:
+
+\textbf{Accuracy:} Tỷ lệ tổng thể của các dự đoán đúng. Mặc dù trực quan, accuracy có thể gây hiểu lầm với dữ liệu mất cân bằng.
+
+\textbf{Precision, Recall, F1-Score (theo lớp):} Các metrics phân loại tiêu chuẩn được tính toán cho mỗi lớp độc lập.
+
+\textbf{F1-Macro:} Trung bình không trọng số của các F1-scores theo lớp. Metric này đối xử với tất cả các lớp như nhau bất kể support, làm cho nó lý tưởng cho các bộ dữ liệu mất cân bằng:
+\begin{equation}
+\text{F1-macro} = \frac{1}{K} \sum_{k=1}^K \text{F1}_k
+\end{equation}
+
+\textbf{F1-Weighted:} Trung bình có trọng số của các F1-scores theo lớp, trong đó trọng số là support của lớp. Metric này phản ánh hiệu suất tổng thể trong khi tính đến kích thước lớp.
+
+\textbf{Confusion Matrix:} Trực quan hóa các mẫu phân loại và các loại lỗi phổ biến.
+
+Chúng tôi báo cáo tất cả các metrics trên tập test được giữ lại. Đối với các mô hình ML truyền thống, chúng tôi báo cáo kết quả sử dụng các hyperparameters tốt nhất được tìm thấy qua tuning tập validation. Đối với PhoBERT, chúng tôi báo cáo kết quả từ checkpoint với điểm F1-macro validation tốt nhất.
+
+\section{Kết quả và Phân tích}
+
+\subsection{So sánh Hiệu suất Tổng thể}
+
+Bảng~\ref{tab:main_results} trình bày hiệu suất tổng thể của tất cả các mô hình trên tập test. Hình~\ref{fig:model_comparison} cung cấp so sánh trực quan về accuracy và điểm F1-macro.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Model} & \textbf{Accuracy} & \textbf{F1-Macro} \\
+\midrule
+Naive Bayes & 0.8307 & 0.3656 \\
+SVM & \textbf{0.8852} & 0.6041 \\
+Random Forest & 0.8696 & 0.5166 \\
+Logistic Regression & 0.8463 & \textbf{0.6287} \\
+\midrule
+PhoBERT & 0.8171 & 0.6053 \\
+\bottomrule
+\end{tabular}
+\caption{So sánh hiệu suất tổng thể trên tập test (514 mẫu). SVM đạt accuracy cao nhất (88,52\%), trong khi Logistic Regression đạt F1-macro cao nhất (62,87\%). PhoBERT đạt F1-macro cạnh tranh (60,53\%) bất chấp accuracy thấp hơn.}
+\label{tab:main_results}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/model_comparison.pdf}
+  \caption{So sánh trực quan hiệu suất mô hình. (Trái) Accuracy test cho thấy SVM dẫn đầu ở 88,52\%, với PhoBERT ở 81,71\%. (Phải) Điểm F1-macro tiết lộ Logistic Regression (62,87\%) và PhoBERT (60,53\%) xử lý mất cân bằng lớp tốt hơn Naive Bayes (36,56\%).}
+  \label{fig:model_comparison}
+\end{figure}
+
+\textbf{Các Quan sát Chính:}
+
+\textbf{(1) SVM đạt accuracy cao nhất (88,52\%)} nhưng không đạt F1-macro cao nhất (60,41\%), cho thấy nó có thể ưu tiên lớp đa số (Positive). Khoảng cách accuracy 2,4\% so với PhoBERT cho thấy các phương pháp truyền thống có thể rất hiệu quả cho phân tích cảm xúc tiếng Việt khi được tuning đúng cách.
+
+\textbf{(2) Logistic Regression đạt F1-macro cao nhất (62,87\%)} bất chấp accuracy thấp hơn (84,63\%), chứng minh sự cân bằng tốt hơn trên các lớp. Điều này làm cho nó trở thành mô hình đáng tin cậy nhất cho các ứng dụng thực tế nơi hiệu suất lớp thiểu số quan trọng.
+
+\textbf{(3) PhoBERT đạt F1-macro cạnh tranh (60,53\%)} với accuracy 81,71\%. Mặc dù nó không vượt qua các phương pháp truyền thống, nó hoạt động đáng kính mà không cần feature engineering thủ công. Khoảng cách accuracy 6,8\% từ SVM cho thấy với kích thước bộ dữ liệu này (3.424 mẫu), hiểu biết ngữ cảnh của PhoBERT không hoàn toàn bù đắp cho độ phức tạp cao hơn của nó.
+
+\textbf{(4) Naive Bayes hoạt động kém nghiêm trọng về F1-macro (36,56\%)} bất chấp accuracy hợp lý (83,07\%). Điều này cho thấy nó dự đoán lớp đa số gần như độc quyền, như được xác nhận bởi phân tích confusion matrix (Phần 5.3).
+
+\subsection{Phân tích Hiệu suất Theo lớp}
+
+Bảng~\ref{tab:per_class} trình bày các metrics chi tiết theo lớp cho tất cả các mô hình. Hình~\ref{fig:per_class} trực quan hóa phân bố precision và F1-score trên các lớp.
+
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{llccccccc}
+\toprule
+\textbf{Model} & \textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} & \textbf{Support} \\
+\midrule
+\multirow{3}{*}{Naive Bayes} & Negative & 1.000 & 0.105 & 0.190 & 57 \\
+& Neutral & 0.000 & 0.000 & 0.000 & 36 \\
+& Positive & 0.829 & 1.000 & 0.906 & 421 \\
+\midrule
+\multirow{3}{*}{SVM} & Negative & 0.725 & 0.649 & 0.685 & 57 \\
+& Neutral & 0.500 & 0.111 & 0.182 & 36 \\
+& Positive & 0.910 & 0.983 & 0.945 & 421 \\
+\midrule
+\multirow{3}{*}{Random Forest} & Negative & 0.900 & 0.474 & 0.621 & 57 \\
+& Neutral & 0.000 & 0.000 & 0.000 & 36 \\
+& Positive & 0.870 & 0.998 & 0.929 & 421 \\
+\midrule
+\multirow{3}{*}{Logistic Regression} & Negative & 0.609 & 0.737 & 0.667 & 57 \\
+& Neutral & 0.255 & 0.333 & 0.289 & 36 \\
+& Positive & 0.957 & 0.905 & 0.930 & 421 \\
+\midrule
+\multirow{3}{*}{PhoBERT} & Negative & 0.591 & 0.672 & 0.629 & 58 \\
+& Neutral & 0.206 & 0.389 & 0.269 & 36 \\
+& Positive & 0.966 & 0.874 & 0.918 & 420 \\
+\bottomrule
+\end{tabular}
+\caption{Các metrics hiệu suất chi tiết theo lớp. Lớp Neutral đặt ra thách thức lớn nhất trên tất cả các mô hình, với F1-scores dao động từ 0,000 đến 0,289. PhoBERT đạt hiệu suất lớp Neutral tốt nhất (F1=0,269) nhưng vẫn gặp khó khăn đáng kể.}
+\label{tab:per_class}
+\end{table*}
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/per_class_performance.pdf}
+  \caption{Trực quan hóa hiệu suất theo lớp. (Trái) Precision theo lớp cho thấy tất cả các mô hình đạt precision cao trên lớp Positive nhưng gặp khó khăn với Neutral. (Phải) F1-score theo lớp tiết lộ khó khăn nghiêm trọng của phân loại Neutral, với hầu hết các mô hình đạt F1-scores gần bằng không.}
+  \label{fig:per_class}
+\end{figure*}
+
+\textbf{Hiệu suất Lớp Negative:}
+Tất cả các mô hình đạt hiệu suất hợp lý trên các mẫu Negative (F1: 0,19-0,69). SVM (F1=0,685) và Logistic Regression (F1=0,667) hoạt động tốt nhất, trong khi Naive Bayes (F1=0,190) chịu recall cực thấp (10,5\%), dự đoán đúng chỉ 6 trong số 57 mẫu Negative.
+
+\textbf{Hiệu suất Lớp Neutral:}
+Lớp Neutral đặt ra thách thức lớn nhất, với F1-scores dao động từ 0,000 (Naive Bayes, Random Forest) đến 0,289 (Logistic Regression). PhoBERT đạt F1=0,269, hiệu suất tốt thứ hai, chứng minh một số lợi ích từ hiểu biết ngữ cảnh. Tuy nhiên, ngay cả mô hình tốt nhất (Logistic Regression) chỉ đạt 33,3\% recall, xác định đúng chỉ 12 trong số 36 mẫu Neutral.
+
+Hiệu suất kém này bắt nguồn từ ba yếu tố: (1) \textbf{Dữ liệu training hạn chế} (chỉ 239 mẫu Neutral, 7,0\% bộ dữ liệu), (2) \textbf{Ranh giới mơ hồ} giữa cảm xúc trung lập và tích cực/tiêu cực nhẹ, và (3) \textbf{Độ tinh tế ngôn ngữ} trong việc biểu đạt ý kiến trung lập bằng tiếng Việt.
+
+\textbf{Hiệu suất Lớp Positive:}
+Tất cả các mô hình xuất sắc trên các mẫu Positive (F1: 0,906-0,945), được hưởng lợi từ dữ liệu training phong phú (2.803 mẫu, 81,8\%). SVM đạt F1-score cao nhất (0,945) với 98,3\% recall, trong khi PhoBERT đạt 0,918 với sự đánh đổi precision-recall cân bằng hơn.
+
+\subsection{Phân tích Confusion Matrix}
+
+Hình~\ref{fig:confusion} trình bày confusion matrices cho tất cả các mô hình, tiết lộ các mẫu phân loại và lỗi phổ biến.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=0.95\textwidth]{figures/confusion_matrices.pdf}
+  \caption{Confusion matrices cho tất cả các mô hình (được chuẩn hóa theo hàng). Màu sẫm hơn chỉ ra tỷ lệ cao hơn. Tất cả các mô hình cho thấy các mẫu đường chéo mạnh cho các lớp Negative và Positive nhưng gặp khó khăn với Neutral, thường phân loại sai nó thành Positive. PhoBERT cho thấy nhận dạng Neutral tốt hơn một chút (38,9\% recall) so với các phương pháp truyền thống.}
+  \label{fig:confusion}
+\end{figure*}
+
+\textbf{Naive Bayes:} Thể hiện sự thiên lệch cực độ về lớp Positive, dự đoán nó cho 89,5\% mẫu Negative và 100\% mẫu Neutral. Điều này giải thích accuracy cao (83,07\%) nhưng F1-macro thấp (36,56\%).
+
+\textbf{SVM:} Cho thấy các dự đoán cân bằng hơn. Đối với mẫu Negative, 64,9\% được phân loại đúng, 3,5\% phân loại sai thành Neutral, và 31,6\% thành Positive. Đối với mẫu Neutral, chỉ có 11,1\% được phân loại đúng, với 25,0\% phân loại sai thành Negative và 63,9\% thành Positive.
+
+\textbf{Random Forest:} Tương tự Naive Bayes, thiên lệch mạnh về lớp Positive. Phân loại đúng 47,4\% mẫu Negative nhưng 0\% mẫu Neutral, dự đoán tất cả mẫu Neutral thành Negative (5,6\%) hoặc Positive (94,4\%).
+
+\textbf{Logistic Regression:} Đạt được confusion matrix cân bằng nhất. Đối với mẫu Negative, 73,7\% phân loại đúng với 15,8\% phân loại sai thành Neutral và 10,5\% thành Positive. Đối với mẫu Neutral, 33,3\% phân loại đúng với 36,1\% phân loại sai thành Negative và 30,6\% thành Positive.
+
+\textbf{PhoBERT:} Cho thấy nhận dạng lớp Neutral tốt nhất (38,9\% recall), phân loại đúng 14 trong số 36 mẫu Neutral. Tuy nhiên, nó vẫn phân loại sai 47,2\% mẫu Neutral thành Negative và 13,9\% thành Positive. Đối với mẫu Negative, 67,2\% được phân loại đúng, với 19,0\% phân loại sai thành Neutral và 13,8\% thành Positive.
+
+\textbf{Mẫu Lỗi Phổ biến:} Trên tất cả các mô hình, lỗi thường xuyên nhất là phân loại sai mẫu Neutral thành Positive (30,6-100\% mẫu Neutral). Điều này cho thấy các đánh giá phim trung lập thường chứa ngôn ngữ tích cực nhẹ mà các mô hình diễn giải như cảm xúc tích cực.
+
+\subsection{Hiệu quả Tính toán}
+
+Bảng~\ref{tab:efficiency} so sánh các yêu cầu tính toán trên các mô hình.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Model} & \textbf{Params} & \textbf{Train Time} & \textbf{Inference} \\
+\midrule
+Naive Bayes & 30K & 0.5s & 0.1ms \\
+SVM & 30K & 12.3s & 0.3ms \\
+Random Forest & 50K & 8.7s & 0.5ms \\
+Logistic Reg. & 30K & 2.1s & 0.1ms \\
+\midrule
+PhoBERT & 135M & 331s & 2.1ms \\
+\bottomrule
+\end{tabular}
+\caption{So sánh hiệu quả tính toán. Thời gian huấn luyện được đo trên GPU đơn (Tesla T4) cho PhoBERT và CPU (Intel i7) cho các mô hình truyền thống. Thời gian inference mỗi mẫu (batch size 64).}
+\label{tab:efficiency}
+\end{table}
+
+Các mô hình ML truyền thống huấn luyện trong vài giây và thực hiện inference trong micro giây, làm cho chúng phù hợp cho các môi trường hạn chế tài nguyên. PhoBERT yêu cầu 331 giây (5,5 phút) cho huấn luyện và 2,1ms mỗi mẫu cho inference, đại diện cho sự tăng 600× thời gian huấn luyện và 7-21× tăng độ trễ inference.
+
+Đối với triển khai thực tế, sự đánh đổi này phải được xem xét. Nếu khoảng cách accuracy 6,8\% (88,52\% SVM so với 81,71\% PhoBERT) là chấp nhận được, các phương pháp truyền thống cung cấp lợi thế tính toán đáng kể. Tuy nhiên, nếu hiểu biết ngữ cảnh là quan trọng (ví dụ: xử lý sarcasm, phủ định phức tạp), language modeling vượt trội của PhoBERT có thể biện minh cho chi phí.
+
+\subsection{Phân tích Lỗi và Nghiên cứu Trường hợp}
+
+Chúng tôi kiểm tra thủ công các mẫu bị phân loại sai để hiểu các thất bại mô hình:
+
+\textbf{Trường hợp 1 - Sarcasm:} ``Phim 'hay' quá, xem xong muốn đòi tiền lại'' (Bộ phim 'hay' quá, xem xong muốn đòi tiền lại). Nhãn thật: Negative. Dự đoán bởi tất cả các mô hình: Positive. Việc sử dụng sarcasm của ``hay'' (tốt) đánh lừa các mô hình thiếu hiểu biết pragmatic.
+
+\textbf{Trường hợp 2 - Cảm xúc Hỗn hợp:} ``Phim hay nhưng kết thúc hơi dở'' (Phim hay nhưng kết thúc hơi dở). Nhãn thật: Positive. Dự đoán bởi SVM: Neutral, bởi PhoBERT: Positive. Cảm xúc hỗn hợp tạo ra sự mơ hồ, với khía cạnh tích cực chiếm ưu thế trong ấn tượng tổng thể.
+
+\textbf{Trường hợp 3 - Mơ hồ Neutral:} ``Bình thường, không có gì đặc biệt'' (Bình thường, không có gì đặc biệt). Nhãn thật: Neutral. Dự đoán bởi tất cả các mô hình ngoại trừ Logistic Regression: Positive. Việc thiếu các dấu hiệu cảm xúc mạnh làm cho phân loại neutral trở nên thách thức.
+
+\textbf{Trường hợp 4 - Tham chiếu Văn hóa:} ``Phim giống 'Ký sinh trùng' nhưng không đạt'' (Phim giống 'Ký sinh trùng' nhưng không đạt). Nhãn thật: Negative. Dự đoán bởi các mô hình truyền thống: Neutral/Positive. Các tham chiếu văn hóa yêu cầu kiến thức thế giới mà các mô hình truyền thống thiếu.
+
+Những trường hợp này làm nổi bật các hạn chế cơ bản: phát hiện sarcasm yêu cầu lý luận pragmatic, xử lý cảm xúc hỗn hợp cần phân tích mức aspect, phân loại neutral đòi hỏi hiểu biết cảm xúc chi tiết, và các tham chiếu văn hóa cần kiến thức bên ngoài.
+
+\section{Thảo luận}
+
+\subsection{Hàm ý cho NLP Tiếng Việt}
+
+Kết quả của chúng tôi chứng minh rằng các phương pháp machine learning truyền thống vẫn rất cạnh tranh cho phân tích cảm xúc tiếng Việt khi được tuning đúng cách. Accuracy 88,52\% đạt được bởi SVM, vượt qua 81,71\% của PhoBERT, thách thức giả định rằng các mô hình dựa trên transformer luôn vượt trội các phương pháp truyền thống.
+
+Phát hiện này có hàm ý thực tế cho các nhà thực hành NLP tiếng Việt. Đối với các nhiệm vụ với dữ liệu hạn chế (3.000-5.000 mẫu) và mất cân bằng lớp nghiêm trọng, đầu tư vào feature engineering cẩn thận và tuning hyperparameter cho các mô hình truyền thống có thể mang lại kết quả tốt hơn so với fine-tuning các mô hình tiền huấn luyện lớn. Giảm thời gian huấn luyện 600× và tăng tốc inference 7-21× làm cho các phương pháp truyền thống hấp dẫn cho triển khai sản xuất.
+
+Tuy nhiên, hiệu suất lớp Neutral vượt trội của PhoBERT (F1=0,269 so với 0,182-0,289 cho các phương pháp truyền thống) cho thấy hiểu biết ngữ cảnh cung cấp lợi ích cho các trường hợp thách thức. Các phương pháp lai kết hợp hiệu quả của các phương pháp truyền thống với lý luận ngữ cảnh của transformers đại diện cho một hướng đầy hứa hẹn.
+
+\subsection{Thách thức Lớp Neutral}
+
+Hiệu suất lớp Neutral kém nhất quán (F1: 0,00-0,29) trên tất cả các mô hình tiết lộ một thách thức cơ bản trong phân tích cảm xúc. Khó khăn này bắt nguồn từ:
+
+\textbf{(1) Thiếu hụt Dữ liệu:} Với chỉ 239 mẫu Neutral (7,0\%), các mô hình có không đủ ví dụ để học các mẫu cảm xúc neutral mạnh mẽ.
+
+\textbf{(2) Mơ hồ Ranh giới:} Cảm xúc neutral nằm giữa tích cực và tiêu cực, tạo ra ranh giới mơ hồ. Các đánh giá thể hiện sự hài lòng nhẹ hoặc thất vọng nhẹ khó phân biệt với các ý kiến thực sự trung lập.
+
+\textbf{(3) Độ tinh tế Ngôn ngữ:} Các biểu đạt neutral tiếng Việt thường sử dụng ngôn ngữ ngầm (``bình thường'' - normal, ``tạm được'' - acceptable) thiếu các dấu hiệu cảm xúc mạnh, làm cho chúng khó phát hiện.
+
+Giải quyết thách thức này đòi hỏi: (1) Thu thập thêm mẫu Neutral thông qua crawl có mục tiêu, (2) Phát triển phân tích cảm xúc mức aspect để xử lý cảm xúc hỗn hợp, (3) Tích hợp kiến thức bên ngoài (ví dụ: sentiment lexicons, discourse markers) để nắm bắt tốt hơn các biểu đạt neutral.
+
+\subsection{So sánh với Công trình Liên quan}
+
+Kết quả của chúng tôi có thể được đặt trong bối cảnh so với các công trình phân tích cảm xúc tiếng Việt trước đây:
+
+\textbf{UIT-VSFC~\citep{nguyen2018uitvsfc}:} Đạt F1-score 87,94\% trên phản hồi sinh viên (3 lớp) sử dụng Maximum Entropy. SVM của chúng tôi đạt accuracy 88,52\% trên đánh giá phim, chứng minh hiệu suất tương đương bất chấp các lĩnh vực khác nhau.
+
+\textbf{Các Phương pháp Ensemble~\citep{thin2021}:} Báo cáo kết quả state-of-the-art bằng cách kết hợp nhiều mô hình tiền huấn luyện (PhoBERT, XLM-R, InfoXLM). Mặc dù chúng tôi không triển khai ensemble, mô hình PhoBERT đơn của chúng tôi đạt hiệu suất cạnh tranh, gợi ý rằng đối với đánh giá phim, độ phức tạp ensemble có thể không cần thiết.
+
+\textbf{Bài báo PhoBERT Gốc~\citep{nguyen2020phobert}:} Báo cáo accuracy 96,7\% trên POS tagging và F1 93,6\% trên NER. Accuracy 81,71\% của chúng tôi trên phân loại cảm xúc phản ánh khó khăn vốn có của các nhiệm vụ chủ quan so với các nhiệm vụ cú pháp/ngữ nghĩa.
+
+\subsection{Hạn chế và Hướng Nghiên cứu Tương lai}
+
+\textbf{Hạn chế 1: Gán nhãn Mô phỏng.} Mặc dù gán nhãn mô phỏng của chúng tôi đạt được độ đồng thuận giữa người gán nhãn cao (κ=0,9276), nó dựa vào các heuristic dựa trên rating có thể không nắm bắt đầy đủ các sắc thái cảm xúc dựa trên văn bản. Nghiên cứu tương lai nên xác thực nhãn thông qua gán nhãn thủ công bởi các chuyên gia lĩnh vực.
+
+\textbf{Hạn chế 2: Phạm vi Baseline Hạn chế.} Chúng tôi so sánh với ML truyền thống và PhoBERT nhưng không so sánh với các biến thể transformer khác (XLM-R, mBERT) hoặc các phương pháp ensemble. So sánh có hệ thống trên các kiến trúc transformer sẽ cung cấp hiểu biết sâu hơn.
+
+\textbf{Hạn chế 3: Lĩnh vực Đơn.} Bộ dữ liệu của chúng tôi tập trung độc quyền vào đánh giá phim. Tổng quát hóa sang các lĩnh vực khác (đánh giá sản phẩm, mạng xã hội) đòi hỏi xác thực bổ sung.
+
+\textbf{Hạn chế 4: Phân tích Mức Aspect.} Chúng tôi thực hiện phân loại cảm xúc mức document, bỏ qua cảm xúc mức aspect (ví dụ: tích cực về diễn xuất nhưng tiêu cực về cốt truyện). Phân tích cảm xúc dựa trên aspect sẽ cung cấp hiểu biết chi tiết hơn.
+
+\textbf{Hướng Tương lai 1: Tăng cường Dữ liệu.} Các kỹ thuật như back-translation, thay thế từ đồng nghĩa, và tăng cường generative có thể giải quyết mất cân bằng lớp, đặc biệt cho lớp Neutral.
+
+\textbf{Hướng Tương lai 2: Học Đa nhiệm vụ.} Huấn luyện chung trên phân loại cảm xúc và các nhiệm vụ liên quan (phát hiện cảm xúc, phát hiện sarcasm) có thể cải thiện hiệu suất thông qua các biểu diễn được chia sẻ.
+
+\textbf{Hướng Tương lai 3: Khả năng Giải thích.} Phát triển các mô hình có thể giải thích làm nổi bật các cụm từ mang cảm xúc sẽ tăng cường niềm tin và tạo điều kiện phân tích lỗi.
+
+\textbf{Hướng Tương lai 4: Chuyển giao Đa ngôn ngữ.} Tận dụng các mô hình đa ngôn ngữ và học chuyển giao đa ngôn ngữ có thể cải thiện hiệu suất bằng cách sử dụng tài nguyên cảm xúc tiếng Anh.
+
+\section{Kết luận}
+
+Chúng tôi trình bày một nghiên cứu toàn diện về phân loại cảm xúc đánh giá phim tiếng Việt, so sánh các phương pháp machine learning truyền thống với PhoBERT trên một bộ dữ liệu mới được xây dựng gồm 3.424 đánh giá. Bộ dữ liệu của chúng tôi đạt được chất lượng gán nhãn xuất sắc (Cohen's Kappa = 0,9276) thông qua một quy trình gán nhãn mô phỏng được thiết kế cẩn thận.
+
+Kết quả thực nghiệm chứng minh rằng SVM đạt accuracy cao nhất (88,52\%), vượt qua PhoBERT (81,71\%) 6,8\%, trong khi Logistic Regression đạt F1-macro cao nhất (62,87\%). PhoBERT đạt F1-macro cạnh tranh (60,53\%) và cho thấy hiệu suất lớp Neutral vượt trội (F1=0,269), gợi ý lợi ích từ hiểu biết ngữ cảnh bất chấp accuracy tổng thể thấp hơn.
+
+Phân tích của chúng tôi tiết lộ rằng lớp Neutral đặt ra thách thức lớn nhất trên tất cả các mô hình (F1: 0,00-0,29), làm nổi bật khó khăn cơ bản trong việc phân biệt cảm xúc neutral với các biểu đạt tích cực/tiêu cực nhẹ. Thách thức này bắt nguồn từ thiếu hụt dữ liệu (7,0\% mẫu Neutral), mơ hồ ranh giới, và độ tinh tế ngôn ngữ trong các biểu đạt neutral tiếng Việt.
+
+Đối với các ứng dụng phân tích cảm xúc tiếng Việt thực tế, những phát hiện của chúng tôi gợi ý rằng các phương pháp truyền thống cung cấp các đánh đổi hấp dẫn: SVM đạt accuracy gần 90\% với huấn luyện nhanh hơn 600× và inference nhanh hơn 7-21× so với PhoBERT. Tuy nhiên, đối với các nhiệm vụ yêu cầu hiểu biết ngữ cảnh sâu sắc (sarcasm, tham chiếu văn hóa), language modeling vượt trội của PhoBERT có thể biện minh cho chi phí tính toán.
+
+Bộ dữ liệu, mã nguồn, và các mô hình đã huấn luyện của chúng tôi được công khai để tạo điều kiện nghiên cứu trong tương lai về phân tích cảm xúc tiếng Việt và NLP tài nguyên thấp.
+
+\section*{Lời cảm ơn}
+
+Chúng tôi cảm ơn các reviewer ẩn danh về phản hồi quý giá của họ. Chúng tôi cũng cảm ơn Moveek.com vì đã cung cấp nền tảng mà chúng tôi đã thu thập bộ dữ liệu.
+
+\section*{References}
+\begin{thebibliography}{99}
+\small
+
+\bibitem[Liu(2012)]{liu2012}
+Bing Liu.
+\newblock 2012.
+\newblock Sentiment Analysis and Opinion Mining.
+\newblock \emph{Synthesis Lectures on Human Language Technologies}, 5(1):1--167.
+
+\bibitem[Nguyen and Nguyen(2018)]{nguyen2018}
+Kiet Van Nguyen and Ngan Luu-Thuy Nguyen.
+\newblock 2018.
+\newblock A Deep Learning Approach for Vietnamese Sentiment Analysis.
+\newblock In \emph{Proceedings of the 10th International Conference on Knowledge and Systems Engineering (KSE)}.
+
+\bibitem[Pang et~al.(2008)]{pang2008}
+Bo Pang and Lillian Lee.
+\newblock 2008.
+\newblock Opinion Mining and Sentiment Analysis.
+\newblock \emph{Foundations and Trends in Information Retrieval}, 2(1-2):1--135.
+
+\bibitem[Devlin et~al.(2019)]{devlin2019}
+Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova.
+\newblock 2019.
+\newblock BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding.
+\newblock In \emph{Proceedings of NAACL-HLT}, pages 4171--4186.
+
+\bibitem[Nguyen and Nguyen(2020)]{nguyen2020phobert}
+Dat Quoc Nguyen and Anh Tuan Nguyen.
+\newblock 2020.
+\newblock PhoBERT: Pre-trained Language Models for Vietnamese.
+\newblock In \emph{Findings of EMNLP}, pages 1037--1042.
+
+\bibitem[Nguyen et~al.(2018)]{nguyen2018uitvsfc}
+Kiet Van Nguyen, Vu Duc Nguyen, Phu X. V. Nguyen, Tham T. H. Truong, and Ngan Luu-Thuy Nguyen.
+\newblock 2018.
+\newblock UIT-VSFC: Vietnamese Students' Feedback Corpus for Sentiment Analysis.
+\newblock In \emph{Proceedings of the 10th International Conference on Knowledge and Systems Engineering (KSE)}, pages 19--24.
+
+\bibitem[Nguyen et~al.(2014)]{nguyen2014}
+Kim Anh Nguyen, Sabine Schulte im Walde, and Ngoc Thang Vu.
+\newblock 2014.
+\newblock Sentiment Dictionary for Vietnamese.
+\newblock In \emph{Proceedings of the 9th International Conference on Language Resources and Evaluation (LREC)}.
+
+\bibitem[Vo and Zhang(2015)]{vo2015}
+Duy-Tin Vo and Yue Zhang.
+\newblock 2015.
+\newblock Target-Dependent Twitter Sentiment Classification with Rich Automatic Features.
+\newblock In \emph{Proceedings of IJCAI}, pages 1347--1353.
+
+\bibitem[Vu et~al.(2018)]{vu2018}
+Xuan-Son Vu, Thanh Vu, Son N. Tran, and Lili Jiang.
+\newblock 2018.
+\newblock ETNLP: A Visual-Aided Systematic Approach to Select Pre-Trained Embeddings for a Downstream Task.
+\newblock In \emph{Proceedings of RANLP}, pages 1285--1294.
+
+\bibitem[Thin et~al.(2021)]{thin2021}
+Dang Van Thin, Duong Ngoc Hao, and Ngan Luu-Thuy Nguyen.
+\newblock 2021.
+\newblock A Study of Vietnamese Sentiment Classification with Ensemble Pre-Trained Language Models.
+\newblock In \emph{Proceedings of the 13th International Conference on Knowledge and Systems Engineering (KSE)}.
+
+\bibitem[Pang et~al.(2002)]{pang2002}
+Bo Pang, Lillian Lee, and Shivakumar Vaithyanathan.
+\newblock 2002.
+\newblock Thumbs up? Sentiment Classification using Machine Learning Techniques.
+\newblock In \emph{Proceedings of EMNLP}, pages 79--86.
+
+\bibitem[Socher et~al.(2013)]{socher2013}
+Richard Socher, Alex Perelygin, Jean Wu, Jason Chuang, Christopher D. Manning, Andrew Ng, and Christopher Potts.
+\newblock 2013.
+\newblock Recursive Deep Models for Semantic Compositionality Over a Sentiment Treebank.
+\newblock In \emph{Proceedings of EMNLP}, pages 1631--1642.
+
+\bibitem[He and Garcia(2009)]{he2009}
+Haibo He and Edwardo A. Garcia.
+\newblock 2009.
+\newblock Learning from Imbalanced Data.
+\newblock \emph{IEEE Transactions on Knowledge and Data Engineering}, 21(9):1263--1284.
+
+\bibitem[Hu et~al.(2009)]{hu2009}
+Nan Hu, Paul A. Pavlou, and Jennifer Zhang.
+\newblock 2009.
+\newblock Why Do Online Product Reviews Have a J-Shaped Distribution? Overcoming Biases in Online Word-of-Mouth Communication.
+\newblock \emph{Communications of the ACM}, 52(10):144--147.
+
+\end{thebibliography}
+
+\end{document}

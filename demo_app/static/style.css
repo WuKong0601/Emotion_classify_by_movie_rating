@@ -1,0 +1,488 @@
+/* Vietnamese Movie Review Sentiment Analysis - Demo App Styling */
+
+:root {
+    --bg-primary: #0f0f1a;
+    --bg-secondary: #1a1a2e;
+    --bg-card: #16213e;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --accent: #e94560;
+    --accent-hover: #ff6b81;
+    --positive: #27ae60;
+    --neutral: #95a5a6;
+    --negative: #e74c3c;
+    --border-radius: 12px;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+/* Header */
+header {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+    padding: 2rem;
+    text-align: center;
+    border-bottom: 2px solid var(--accent);
+}
+
+header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Sections */
+section {
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+}
+
+section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Movies Grid */
+.movies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+}
+
+.movie-card {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.movie-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent);
+}
+
+.movie-card.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px rgba(233, 69, 96, 0.3);
+}
+
+.movie-poster img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.movie-info {
+    padding: 0.8rem;
+}
+
+.movie-info h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.movie-year, .movie-genre {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    display: block;
+}
+
+/* Selected Movie */
+.selected-movie {
+    background: var(--bg-card);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.selected-movie .placeholder {
+    color: var(--text-secondary);
+}
+
+.selected-movie .selected-title {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+/* Form Groups */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+/* Rating Slider */
+.rating-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.rating-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 8px;
+    background: linear-gradient(to right, var(--negative) 0%, var(--neutral) 50%, var(--positive) 100%);
+    border-radius: 4px;
+    outline: none;
+}
+
+.rating-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+}
+
+.rating-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 40px;
+    text-align: center;
+}
+
+/* Textarea */
+textarea {
+    width: 100%;
+    padding: 1rem;
+    background: var(--bg-card);
+    border: 2px solid transparent;
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    font-size: 1rem;
+    resize: vertical;
+    transition: border-color 0.3s;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+textarea::placeholder {
+    color: var(--text-secondary);
+}
+
+/* Select */
+select {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    background: var(--bg-card);
+    border: 2px solid transparent;
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+select:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+/* Buttons */
+.predict-btn {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+    border: none;
+    border-radius: var(--border-radius);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.predict-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(233, 69, 96, 0.4);
+}
+
+.predict-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Sample Reviews */
+.sample-reviews {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.sample-reviews .label {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.sample-btn {
+    padding: 0.5rem 1rem;
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.sample-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+/* Result Section */
+.result-card {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    border: 3px solid var(--positive);
+}
+
+.result-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.result-emoji {
+    font-size: 3rem;
+}
+
+.result-label-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.result-label {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.result-model {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Probabilities */
+.probabilities {
+    margin-bottom: 1.5rem;
+}
+
+.prob-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.8rem;
+}
+
+.prob-label {
+    min-width: 80px;
+    font-size: 0.9rem;
+}
+
+.prob-bar {
+    flex: 1;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.prob-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.5s ease;
+}
+
+.prob-value {
+    min-width: 50px;
+    text-align: right;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.no-prob {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Result Details */
+.result-details {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 1rem;
+}
+
+.detail-item {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.detail-label {
+    color: var(--text-secondary);
+    min-width: 120px;
+}
+
+.detail-value {
+    flex: 1;
+}
+
+.processed-text {
+    font-style: italic;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Comparison Section */
+.compare-btn {
+    padding: 0.8rem 1.5rem;
+    background: var(--bg-card);
+    border: 2px solid var(--accent);
+    border-radius: var(--border-radius);
+    color: var(--accent);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 1rem;
+}
+
+.compare-btn:hover {
+    background: var(--accent);
+    color: white;
+}
+
+.comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.comparison-card {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    padding: 1.2rem;
+    border: 2px solid;
+    text-align: center;
+}
+
+.comp-header {
+    margin-bottom: 0.8rem;
+}
+
+.comp-model {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.comp-result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.comp-emoji {
+    font-size: 2rem;
+}
+
+.comp-label {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.comp-prob {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+footer p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .movies-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+    
+    .movie-poster img {
+        height: 140px;
+    }
+    
+    .result-emoji {
+        font-size: 2rem;
+    }
+    
+    .result-label {
+        font-size: 1.5rem;
+    }
+}

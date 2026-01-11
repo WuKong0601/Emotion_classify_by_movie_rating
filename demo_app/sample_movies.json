@@ -1,0 +1,72 @@
+[
+    {
+        "id": 1,
+        "title": "Mai",
+        "year": 2024,
+        "poster": "https://via.placeholder.com/200x300/1a1a2e/eee?text=Mai",
+        "genre": "Drama, Romance"
+    },
+    {
+        "id": 2,
+        "title": "Đất Rừng Phương Nam",
+        "year": 2023,
+        "poster": "https://via.placeholder.com/200x300/16213e/eee?text=Dat+Rung",
+        "genre": "Adventure, Drama"
+    },
+    {
+        "id": 3,
+        "title": "Nhà Bà Nữ",
+        "year": 2023,
+        "poster": "https://via.placeholder.com/200x300/0f3460/eee?text=Nha+Ba+Nu",
+        "genre": "Comedy, Drama"
+    },
+    {
+        "id": 4,
+        "title": "Bố Già",
+        "year": 2021,
+        "poster": "https://via.placeholder.com/200x300/533483/eee?text=Bo+Gia",
+        "genre": "Comedy, Drama"
+    },
+    {
+        "id": 5,
+        "title": "Hai Phượng",
+        "year": 2019,
+        "poster": "https://via.placeholder.com/200x300/e94560/eee?text=Hai+Phuong",
+        "genre": "Action, Drama"
+    },
+    {
+        "id": 6,
+        "title": "Ròm",
+        "year": 2020,
+        "poster": "https://via.placeholder.com/200x300/0f3460/eee?text=Rom",
+        "genre": "Drama"
+    },
+    {
+        "id": 7,
+        "title": "Tiệc Trăng Máu",
+        "year": 2020,
+        "poster": "https://via.placeholder.com/200x300/1a1a2e/eee?text=Tiec+Trang+Mau",
+        "genre": "Comedy, Drama"
+    },
+    {
+        "id": 8,
+        "title": "Em Chưa 18",
+        "year": 2017,
+        "poster": "https://via.placeholder.com/200x300/16213e/eee?text=Em+Chua+18",
+        "genre": "Comedy, Romance"
+    },
+    {
+        "id": 9,
+        "title": "Cô Ba Sài Gòn",
+        "year": 2017,
+        "poster": "https://via.placeholder.com/200x300/533483/eee?text=Co+Ba+Sai+Gon",
+        "genre": "Drama, Fantasy"
+    },
+    {
+        "id": 10,
+        "title": "Tôi Thấy Hoa Vàng Trên Cỏ Xanh",
+        "year": 2015,
+        "poster": "https://via.placeholder.com/200x300/e94560/eee?text=Hoa+Vang",
+        "genre": "Drama"
+    }
+]
