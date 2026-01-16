@@ -231,6 +231,13 @@ The raw dataset comprises 3,648 reviews across 11,746 unique movies from 40,522 
 
 Figure~\ref{fig:rating_dist} shows the distribution of numerical ratings in our raw dataset. The distribution is heavily skewed toward positive ratings, with 53.7\% of reviews having the maximum rating (10/10) and only 5.9\% having the minimum rating (1/10). The median rating is 9, and the mean is 7.8.
 
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/rating_dist.pdf}
+  \caption{Distribution of numerical ratings in the raw dataset. The distribution shows extreme positive bias, with over half of all reviews receiving the maximum rating (10/10). This imbalance motivates our use of class weighting and F1-macro as evaluation metrics.}
+  \label{fig:rating_dist}
+\end{figure}
+
 This extreme positive bias reflects a well-known phenomenon in online review systems: satisfied users are more likely to leave reviews than dissatisfied ones~\citep{hu2009}. For movie reviews specifically, the bias is amplified because viewers who dislike a movie often stop watching and do not write reviews.
 
 \subsection{Preprocessing Pipeline}
@@ -541,6 +548,83 @@ Figure~\ref{fig:confusion} presents confusion matrices for all models, revealing
 \textbf{PhoBERT:} Shows the best Neutral class recognition (38.9\% recall), correctly classifying 14 out of 36 Neutral samples. However, it still misclassifies 47.2\% of Neutral samples as Negative and 13.9\% as Positive. For Negative samples, 67.2\% are correctly classified, with 19.0\% misclassified as Neutral and 13.8\% as Positive.
 
 \textbf{Common Error Pattern:} Across all models, the most frequent error is misclassifying Neutral samples as Positive (30.6-100\% of Neutral samples). This suggests that neutral movie reviews often contain mild positive language that models interpret as positive sentiment.
+
+\subsection{Development Set Performance}
+
+To provide a more comprehensive evaluation, we also report results on the development (validation) set, which is used for hyperparameter tuning. Table~\ref{tab:dev_results} presents the performance comparison on the development set (514 samples).
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Model} & \textbf{Accuracy} & \textbf{F1-Macro} \\
+\midrule
+Naive Bayes & 0.8171 & 0.2998 \\
+SVM & \textbf{0.8677} & 0.5415 \\
+Random Forest & 0.8521 & 0.5165 \\
+Logistic Regression & 0.8521 & \textbf{0.6501} \\
+\bottomrule
+\end{tabular}
+\caption{Model performance on development set (514 samples). Results are consistent with test set performance, with SVM achieving highest accuracy and Logistic Regression achieving highest F1-macro.}
+\label{tab:dev_results}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/dev_set_comparison.pdf}
+  \caption{Development set performance comparison. Results align with test set findings, confirming model stability across data splits.}
+  \label{fig:dev_comparison}
+\end{figure}
+
+The development set results confirm the patterns observed on the test set: SVM leads in accuracy (86.77\%) while Logistic Regression achieves the best F1-macro (65.01\%). The consistency between development and test set performance indicates that our models generalize well and are not overfitting.
+
+\subsection{Class Weight Impact Analysis}
+
+To address class imbalance, we employ \texttt{class\_weight='balanced'} for SVM, Random Forest, and Logistic Regression models. This technique automatically adjusts class weights inversely proportional to class frequencies, giving more importance to minority classes during training. Table~\ref{tab:class_weight} compares model performance with and without class weighting on the development set.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & \textbf{F1-Macro} & \textbf{F1-Macro} & \textbf{Improvement} \\
+ & \textbf{(No Weight)} & \textbf{(With Weight)} & \\
+\midrule
+SVM & 0.4937 & 0.5421 & +9.80\% \\
+Random Forest & 0.5036 & 0.4668 & -7.31\% \\
+Logistic Regression & 0.4812 & \textbf{0.6281} & \textbf{+30.51\%} \\
+\bottomrule
+\end{tabular}
+\caption{Impact of class weighting on F1-macro performance. Class weighting significantly improves Logistic Regression (+30.51\%) and SVM (+9.80\%), but slightly degrades Random Forest (-7.31\%).}
+\label{tab:class_weight}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/class_weight_comparison.pdf}
+  \caption{Class weight impact on F1-macro scores. Green arrows indicate improvement, red arrows indicate degradation. Logistic Regression shows the most dramatic improvement (+30.51\%), while Random Forest performance decreases slightly.}
+  \label{fig:class_weight}
+\end{figure}
+
+\textbf{Key Findings:}
+
+\textbf{(1) Logistic Regression benefits most from class weighting:} F1-macro increases from 48.12\% to 62.81\% (+30.51\%), with particularly strong improvements on minority classes. Negative class F1-score improves from 46.91\% to 62.18\% (+15.27\%), and Neutral class F1-score improves from 5.26\% to 33.33\% (+28.07\%). This dramatic improvement makes Logistic Regression the best-performing model for handling class imbalance.
+
+\textbf{(2) SVM shows moderate improvement:} F1-macro increases from 49.37\% to 54.21\% (+9.80\%), with improvements across all classes. The balanced class weights help SVM better recognize minority classes without significantly sacrificing majority class performance.
+
+\textbf{(3) Random Forest performance degrades:} F1-macro decreases from 50.36\% to 46.68\% (-7.31\%) when using class weights. This suggests that Random Forest's ensemble mechanism (averaging predictions from multiple trees) already provides some natural handling of class imbalance, and explicit class weighting may introduce overfitting to minority classes.
+
+\textbf{(4) Per-class analysis:} Figure~\ref{fig:class_weight_heatmap} visualizes F1-score improvements by class. Logistic Regression shows the largest improvements on Negative (+15.27\%) and Neutral (+28.07\%) classes, confirming that class weighting effectively addresses the class imbalance problem for this model.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/class_weight_heatmap.pdf}
+  \caption{Per-class F1-score improvement heatmap. Green indicates improvement, red indicates degradation. Logistic Regression shows the most consistent improvements across all classes, particularly for minority classes (Negative and Neutral).}
+  \label{fig:class_weight_heatmap}
+\end{figure}
+
+These results demonstrate that class weighting is not universally beneficial. While it significantly improves Logistic Regression and moderately improves SVM, it can degrade Random Forest performance. This finding highlights the importance of model-specific hyperparameter tuning and suggests that ensemble methods may have inherent mechanisms for handling class imbalance that make explicit weighting unnecessary.
 
 \subsection{Computational Efficiency}
 

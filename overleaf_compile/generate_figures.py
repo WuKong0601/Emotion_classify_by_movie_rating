@@ -262,9 +262,152 @@ plt.savefig(output_dir / "iaa_metrics.pdf", dpi=300, bbox_inches='tight')
 plt.savefig(output_dir / "iaa_metrics.png", dpi=300, bbox_inches='tight')
 plt.close()
 
-print(f"\n✓ All figures generated successfully in {output_dir}/")
+# 6. Development Set Comparison
+print("Generating development set comparison figure...")
+dev_comparison_path = Path("../experiments/comparison/dev_set_comparison.json")
+if dev_comparison_path.exists():
+    with open(dev_comparison_path, 'r') as f:
+        dev_results = json.load(f)
+    
+    models = []
+    acc_scores = []
+    f1_macro_scores = []
+    
+    for model_name, metrics in dev_results['models'].items():
+        if 'error' not in metrics:
+            models.append(model_name.replace('_', ' ').title())
+            acc_scores.append(metrics['accuracy'])
+            f1_macro_scores.append(metrics['macro_avg']['f1-score'])
+    
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
+    
+    x = np.arange(len(models))
+    bars1 = ax1.bar(x, acc_scores, color='#3498db', alpha=0.8, edgecolor='black', linewidth=1.2)
+    ax1.set_ylabel('Accuracy', fontweight='bold')
+    ax1.set_xlabel('Model', fontweight='bold')
+    ax1.set_title('Development Set Accuracy', fontweight='bold', pad=15)
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(models, rotation=15, ha='right')
+    ax1.set_ylim([0.7, 1.0])
+    ax1.grid(axis='y', alpha=0.3, linestyle='--')
+    
+    for bar, score in zip(bars1, acc_scores):
+        height = bar.get_height()
+        ax1.text(bar.get_x() + bar.get_width()/2., height + 0.005,
+                f'{score:.3f}', ha='center', va='bottom', fontsize=8, fontweight='bold')
+    
+    bars2 = ax2.bar(x, f1_macro_scores, color='#2ecc71', alpha=0.8, edgecolor='black', linewidth=1.2)
+    ax2.set_ylabel('F1-Macro Score', fontweight='bold')
+    ax2.set_xlabel('Model', fontweight='bold')
+    ax2.set_title('Development Set F1-Macro', fontweight='bold', pad=15)
+    ax2.set_xticks(x)
+    ax2.set_xticklabels(models, rotation=15, ha='right')
+    ax2.set_ylim([0.2, 0.7])
+    ax2.grid(axis='y', alpha=0.3, linestyle='--')
+    
+    for bar, score in zip(bars2, f1_macro_scores):
+        height = bar.get_height()
+        ax2.text(bar.get_x() + bar.get_width()/2., height + 0.01,
+                f'{score:.3f}', ha='center', va='bottom', fontsize=8, fontweight='bold')
+    
+    plt.tight_layout()
+    plt.savefig(output_dir / "dev_set_comparison.pdf", dpi=300, bbox_inches='tight')
+    plt.savefig(output_dir / "dev_set_comparison.png", dpi=300, bbox_inches='tight')
+    plt.close()
+
+# 7. Class Weight Comparison
+print("Generating class weight comparison figure...")
+class_weight_path = Path("../experiments/class_weight_comparison/class_weight_comparison.json")
+if class_weight_path.exists():
+    with open(class_weight_path, 'r') as f:
+        cw_results = json.load(f)
+    
+    models = []
+    f1_no_weight = []
+    f1_with_weight = []
+    improvements = []
+    
+    for model_name, result in cw_results['models'].items():
+        models.append(model_name.replace('_', ' ').title())
+        f1_no_weight.append(result['without_class_weight']['macro_avg']['f1-score'])
+        f1_with_weight.append(result['with_class_weight']['macro_avg']['f1-score'])
+        improvements.append(result['improvement']['f1_macro'])
+    
+    fig, ax = plt.subplots(figsize=(10, 5))
+    x = np.arange(len(models))
+    width = 0.35
+    
+    bars1 = ax.bar(x - width/2, f1_no_weight, width, label='Without Class Weight', 
+                   color='lightcoral', alpha=0.8, edgecolor='black', linewidth=1.2)
+    bars2 = ax.bar(x + width/2, f1_with_weight, width, label='With Class Weight', 
+                   color='steelblue', alpha=0.8, edgecolor='black', linewidth=1.2)
+    
+    ax.set_ylabel('F1-Macro Score', fontweight='bold')
+    ax.set_xlabel('Model', fontweight='bold')
+    ax.set_title('Class Weight Impact on F1-Macro (Development Set)', fontweight='bold', pad=15)
+    ax.set_xticks(x)
+    ax.set_xticklabels(models, rotation=15, ha='right')
+    ax.legend(fontsize=10, framealpha=0.9)
+    ax.set_ylim([0, 0.7])
+    ax.grid(axis='y', alpha=0.3, linestyle='--')
+    
+    # Add value labels
+    for bars in [bars1, bars2]:
+        for bar in bars:
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2., height + 0.01,
+                    f'{height:.3f}', ha='center', va='bottom', fontsize=8, fontweight='bold')
+    
+    # Add improvement annotations
+    for i, (improve, model) in enumerate(zip(improvements, models)):
+        if improve > 0:
+            ax.annotate(f'+{improve:.3f}', xy=(i, max(f1_no_weight[i], f1_with_weight[i])), 
+                       xytext=(i, max(f1_no_weight[i], f1_with_weight[i]) + 0.05),
+                       ha='center', va='bottom', fontsize=9, fontweight='bold', 
+                       color='green', arrowprops=dict(arrowstyle='->', color='green', lw=1.5))
+        else:
+            ax.annotate(f'{improve:.3f}', xy=(i, max(f1_no_weight[i], f1_with_weight[i])), 
+                       xytext=(i, max(f1_no_weight[i], f1_with_weight[i]) + 0.05),
+                       ha='center', va='bottom', fontsize=9, fontweight='bold', 
+                       color='red', arrowprops=dict(arrowstyle='->', color='red', lw=1.5))
+    
+    plt.tight_layout()
+    plt.savefig(output_dir / "class_weight_comparison.pdf", dpi=300, bbox_inches='tight')
+    plt.savefig(output_dir / "class_weight_comparison.png", dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    # Per-class improvement heatmap
+    print("Generating class weight improvement heatmap...")
+    improvement_data = []
+    for model_name, result in cw_results['models'].items():
+        row = {'Model': model_name.replace('_', ' ').title()}
+        for label_name in labels:
+            f1_no = result['without_class_weight']['per_class'][label_name]['f1-score']
+            f1_with = result['with_class_weight']['per_class'][label_name]['f1-score']
+            row[label_name] = f1_with - f1_no
+        improvement_data.append(row)
+    
+    df_heatmap = pd.DataFrame(improvement_data).set_index('Model')
+    
+    plt.figure(figsize=(8, 5))
+    sns.heatmap(df_heatmap, annot=True, fmt='.3f', cmap='RdYlGn', center=0,
+               cbar_kws={'label': 'F1-Score Improvement'}, vmin=-0.3, vmax=0.3,
+               linewidths=0.5, linecolor='gray', edgecolor='black')
+    plt.title('F1-Score Improvement by Class and Model\n(With Class Weight - Without Class Weight)', 
+             fontsize=12, fontweight='bold', pad=15)
+    plt.ylabel('Model', fontweight='bold')
+    plt.xlabel('Class', fontweight='bold')
+    plt.tight_layout()
+    plt.savefig(output_dir / "class_weight_heatmap.pdf", dpi=300, bbox_inches='tight')
+    plt.savefig(output_dir / "class_weight_heatmap.png", dpi=300, bbox_inches='tight')
+    plt.close()
+
+print(f"\n[OK] All figures generated successfully in {output_dir}/")
 print(f"  - label_distribution.pdf/png")
 print(f"  - model_comparison.pdf/png")
 print(f"  - confusion_matrices.pdf/png")
 print(f"  - per_class_performance.pdf/png")
 print(f"  - iaa_metrics.pdf/png")
+print(f"  - dev_set_comparison.pdf/png")
+print(f"  - class_weight_comparison.pdf/png")
+print(f"  - class_weight_heatmap.pdf/png")

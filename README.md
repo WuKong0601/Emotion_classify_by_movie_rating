@@ -88,6 +88,29 @@ python src/train.py --features tfidf --models svm
 
 Results are saved to `experiments/results/training_results.json`
 
+### 6. Compare Models on Development Set
+
+So sánh các mô hình đã train trên tập validation (development set):
+
+```bash
+# So sánh tất cả models có sẵn
+python src/compare_models_dev.py
+
+# So sánh các models cụ thể
+python src/compare_models_dev.py --models naive_bayes svm logistic_regression
+
+# Chỉ định đường dẫn data và models
+python src/compare_models_dev.py --data data/labeled_reviews.csv --models-dir experiments/results --output experiments/comparison
+```
+
+Kết quả sẽ được lưu trong `experiments/comparison/`:
+- `dev_set_comparison.json`: Kết quả chi tiết dạng JSON
+- `dev_set_comparison.csv`: Bảng so sánh dạng CSV
+- `dev_set_comparison.tex`: Bảng LaTeX cho paper
+- `dev_f1_comparison.png`: Biểu đồ so sánh F1-score
+- `dev_per_class_f1.png`: Biểu đồ F1-score theo từng class
+- `dev_confusion_matrices.png`: Confusion matrices cho tất cả models
+
 ## 📊 Metrics
 
 - **Accuracy**: Overall correct predictions

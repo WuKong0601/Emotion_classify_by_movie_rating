@@ -230,6 +230,13 @@ Bộ dữ liệu thô bao gồm 3.648 đánh giá trên 11.746 phim duy nhất t
 
 Hình~\ref{fig:rating_dist} cho thấy phân bố của các rating số trong bộ dữ liệu thô của chúng tôi. Phân bố nghiêng mạnh về các rating tích cực, với 53,7\% đánh giá có rating tối đa (10/10) và chỉ có 5,9\% có rating tối thiểu (1/10). Rating trung vị là 9, và giá trị trung bình là 7,8.
 
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/rating_dist.pdf}
+  \caption{Phân bố của các rating số trong bộ dữ liệu thô. Phân bố cho thấy sự thiên lệch tích cực cực độ, với hơn một nửa số đánh giá nhận được rating tối đa (10/10). Sự mất cân bằng này thúc đẩy việc sử dụng class weighting và F1-macro như các metrics đánh giá của chúng tôi.}
+  \label{fig:rating_dist}
+\end{figure}
+
 Thiên lệch tích cực cực độ này phản ánh một hiện tượng được biết đến rộng rãi trong các hệ thống đánh giá trực tuyến: người dùng hài lòng có nhiều khả năng để lại đánh giá hơn những người không hài lòng~\citep{hu2009}. Đối với đánh giá phim cụ thể, sự thiên lệch này được khuếch đại vì người xem không thích một bộ phim thường dừng xem và không viết đánh giá.
 
 \subsection{Pipeline Tiền xử lý}
@@ -540,6 +547,83 @@ Hình~\ref{fig:confusion} trình bày confusion matrices cho tất cả các mô
 \textbf{PhoBERT:} Cho thấy nhận dạng lớp Neutral tốt nhất (38,9\% recall), phân loại đúng 14 trong số 36 mẫu Neutral. Tuy nhiên, nó vẫn phân loại sai 47,2\% mẫu Neutral thành Negative và 13,9\% thành Positive. Đối với mẫu Negative, 67,2\% được phân loại đúng, với 19,0\% phân loại sai thành Neutral và 13,8\% thành Positive.
 
 \textbf{Mẫu Lỗi Phổ biến:} Trên tất cả các mô hình, lỗi thường xuyên nhất là phân loại sai mẫu Neutral thành Positive (30,6-100\% mẫu Neutral). Điều này cho thấy các đánh giá phim trung lập thường chứa ngôn ngữ tích cực nhẹ mà các mô hình diễn giải như cảm xúc tích cực.
+
+\subsection{Hiệu suất trên Tập Development}
+
+Để cung cấp đánh giá toàn diện hơn, chúng tôi cũng báo cáo kết quả trên tập development (validation), được sử dụng cho tuning hyperparameter. Bảng~\ref{tab:dev_results} trình bày so sánh hiệu suất trên tập development (514 mẫu).
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Model} & \textbf{Accuracy} & \textbf{F1-Macro} \\
+\midrule
+Naive Bayes & 0.8171 & 0.2998 \\
+SVM & \textbf{0.8677} & 0.5415 \\
+Random Forest & 0.8521 & 0.5165 \\
+Logistic Regression & 0.8521 & \textbf{0.6501} \\
+\bottomrule
+\end{tabular}
+\caption{Hiệu suất mô hình trên tập development (514 mẫu). Kết quả nhất quán với hiệu suất tập test, với SVM đạt accuracy cao nhất và Logistic Regression đạt F1-macro cao nhất.}
+\label{tab:dev_results}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/dev_set_comparison.pdf}
+  \caption{So sánh hiệu suất trên tập development. Kết quả phù hợp với các phát hiện trên tập test, xác nhận tính ổn định của mô hình trên các phân chia dữ liệu.}
+  \label{fig:dev_comparison}
+\end{figure}
+
+Kết quả trên tập development xác nhận các mẫu quan sát được trên tập test: SVM dẫn đầu về accuracy (86,77\%) trong khi Logistic Regression đạt F1-macro tốt nhất (65,01\%). Sự nhất quán giữa hiệu suất development và test set cho thấy các mô hình của chúng tôi tổng quát hóa tốt và không bị overfitting.
+
+\subsection{Phân tích Tác động Class Weight}
+
+Để giải quyết mất cân bằng lớp, chúng tôi sử dụng \texttt{class\_weight='balanced'} cho các mô hình SVM, Random Forest và Logistic Regression. Kỹ thuật này tự động điều chỉnh trọng số lớp tỷ lệ nghịch với tần suất lớp, cho tầm quan trọng lớn hơn cho các lớp thiểu số trong quá trình huấn luyện. Bảng~\ref{tab:class_weight} so sánh hiệu suất mô hình với và không có class weighting trên tập development.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & \textbf{F1-Macro} & \textbf{F1-Macro} & \textbf{Cải thiện} \\
+ & \textbf{(Không Weight)} & \textbf{(Có Weight)} & \\
+\midrule
+SVM & 0.4937 & 0.5421 & +9.80\% \\
+Random Forest & 0.5036 & 0.4668 & -7.31\% \\
+Logistic Regression & 0.4812 & \textbf{0.6281} & \textbf{+30.51\%} \\
+\bottomrule
+\end{tabular}
+\caption{Tác động của class weighting lên hiệu suất F1-macro. Class weighting cải thiện đáng kể Logistic Regression (+30.51\%) và SVM (+9.80\%), nhưng làm giảm nhẹ Random Forest (-7.31\%).}
+\label{tab:class_weight}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/class_weight_comparison.pdf}
+  \caption{Tác động của class weight lên điểm F1-macro. Mũi tên xanh chỉ ra cải thiện, mũi tên đỏ chỉ ra suy giảm. Logistic Regression cho thấy cải thiện ấn tượng nhất (+30.51\%), trong khi hiệu suất Random Forest giảm nhẹ.}
+  \label{fig:class_weight}
+\end{figure}
+
+\textbf{Các Phát hiện Chính:}
+
+\textbf{(1) Logistic Regression được hưởng lợi nhiều nhất từ class weighting:} F1-macro tăng từ 48,12\% lên 62,81\% (+30,51\%), với các cải thiện đặc biệt mạnh trên các lớp thiểu số. F1-score lớp Negative cải thiện từ 46,91\% lên 62,18\% (+15,27\%), và F1-score lớp Neutral cải thiện từ 5,26\% lên 33,33\% (+28,07\%). Cải thiện ấn tượng này làm cho Logistic Regression trở thành mô hình hoạt động tốt nhất để xử lý mất cân bằng lớp.
+
+\textbf{(2) SVM cho thấy cải thiện vừa phải:} F1-macro tăng từ 49,37\% lên 54,21\% (+9,80\%), với các cải thiện trên tất cả các lớp. Các trọng số lớp cân bằng giúp SVM nhận dạng tốt hơn các lớp thiểu số mà không hy sinh đáng kể hiệu suất lớp đa số.
+
+\textbf{(3) Hiệu suất Random Forest suy giảm:} F1-macro giảm từ 50,36\% xuống 46,68\% (-7,31\%) khi sử dụng class weights. Điều này gợi ý rằng cơ chế ensemble của Random Forest (trung bình hóa dự đoán từ nhiều cây) đã cung cấp một số xử lý tự nhiên cho mất cân bằng lớp, và class weighting rõ ràng có thể gây ra overfitting cho các lớp thiểu số.
+
+\textbf{(4) Phân tích theo lớp:} Hình~\ref{fig:class_weight_heatmap} trực quan hóa các cải thiện F1-score theo lớp. Logistic Regression cho thấy các cải thiện lớn nhất trên các lớp Negative (+15,27\%) và Neutral (+28,07\%), xác nhận rằng class weighting hiệu quả giải quyết vấn đề mất cân bằng lớp cho mô hình này.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/class_weight_heatmap.pdf}
+  \caption{Heatmap cải thiện F1-score theo lớp và mô hình. Màu xanh chỉ ra cải thiện, màu đỏ chỉ ra suy giảm. Logistic Regression cho thấy các cải thiện nhất quán nhất trên tất cả các lớp, đặc biệt cho các lớp thiểu số (Negative và Neutral).}
+  \label{fig:class_weight_heatmap}
+\end{figure}
+
+Những kết quả này chứng minh rằng class weighting không phải lúc nào cũng có lợi. Mặc dù nó cải thiện đáng kể Logistic Regression và cải thiện vừa phải SVM, nó có thể làm suy giảm hiệu suất Random Forest. Phát hiện này làm nổi bật tầm quan trọng của tuning hyperparameter cụ thể cho mô hình và gợi ý rằng các phương pháp ensemble có thể có cơ chế vốn có để xử lý mất cân bằng lớp khiến việc weighting rõ ràng trở nên không cần thiết.
 
 \subsection{Hiệu quả Tính toán}
 
